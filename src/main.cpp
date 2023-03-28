@@ -1,4 +1,6 @@
+#include "colmap.h"
 #include <algorithm>
+#include <filesystem>
 #include <iostream>
 
 static bool HasOption(char **begin, char **end, const std::string &option) {
@@ -42,14 +44,20 @@ int main(int argc, char *argv[]) {
     return 0;
   }
 
-  char *workspace = GetLongShortOption(argv, argv + argc, "-ws", "--workspace");
+  char *workspace = GetLongShortOption(argv, argv + argc, "--workspace", "-ws");
   if (workspace == nullptr) {
     std::cerr << "Path to COLMAP workspace folder must be specified"
               << std::endl;
     return -1;
   }
 
-  // TODO: Read sparse COLMAP reconstruction
+  std::filesystem::path wspath(workspace);
+
+  // Read intrinsic camera parameters
+  std::vector<ppr::CameraIntrinsics> intrinsics =
+      ppr::ReadCOLMAPIntrinsics((wspath / "cameras.txt"));
+
+  // TODO: Read extrinsic camera parameters from images.txt
 
   return 0;
 }
