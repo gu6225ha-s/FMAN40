@@ -6,7 +6,9 @@
 #include <vector>
 
 namespace ppr {
+
 std::vector<CameraIntrinsics> ReadCOLMAPIntrinsics(const std::string &path);
+
 } // namespace ppr
 
 #endif /* COLMAP_H_ */

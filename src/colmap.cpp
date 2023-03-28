@@ -26,7 +26,7 @@ std::vector<CameraIntrinsics> ReadCOLMAPIntrinsics(const std::string &path) {
           CameraIntrinsics(std::stod(comp[4]), std::stod(comp[5]),
                            std::stod(comp[6]), std::stod(comp[7])));
     } else {
-      throw std::runtime_error("Unsupported camera: " + comp[1]); // TESTME
+      throw std::runtime_error("Unsupported camera: " + comp[1]);
     }
   }
 
