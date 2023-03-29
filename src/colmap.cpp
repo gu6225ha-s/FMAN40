@@ -79,7 +79,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
   return images;
 }
 
-std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
+std::map<uint64_t, Point3d> ReadCOLMAPPoints3d(const std::string &path) {
   // https://colmap.github.io/format.html#points3d-txt
   std::ifstream file(path);
   std::string str;
@@ -89,7 +89,7 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::vector<Point3d> points;
+  std::map<uint64_t, Point3d> points;
 
   while (std::getline(file, str)) {
     // clang-format off
@@ -114,7 +114,7 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
       point.AddTrackObservation(image_id, p2d_idx);
     }
 
-    points.push_back(point);
+    points.insert(std::make_pair(id, std::move(point)));
   }
 
   return points;
