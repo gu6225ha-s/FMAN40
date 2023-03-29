@@ -1,6 +1,5 @@
 #include "colmap.h"
 #include <algorithm>
-#include <filesystem>
 #include <iostream>
 
 static bool HasOption(char **begin, char **end, const std::string &option) {
@@ -51,15 +50,11 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  std::filesystem::path wspath(workspace);
-
-  std::vector<ppr::Camera> cameras =
-      ppr::ReadCOLMAPCameras(wspath / "cameras.txt");
-
-  std::vector<ppr::Image> images = ppr::ReadCOLMAPImages(wspath / "images.txt");
-
-  std::map<uint64_t, ppr::Point3d> points =
-      ppr::ReadCOLMAPPoints3d(wspath / "points3D.txt");
+  ppr::Reconstruction reconstruction = ppr::ReadCOLMAPReconstruction(workspace);
+  if (reconstruction.Cameras().size() != 1) {
+    std::cerr << "Can only handle a single camera" << std::endl;
+    return -1;
+  }
 
   return 0;
 }

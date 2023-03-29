@@ -1,5 +1,6 @@
 #include "colmap.h"
 #include "str_util.h"
+#include <filesystem>
 #include <fstream>
 
 namespace ppr {
@@ -79,7 +80,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
   return images;
 }
 
-std::map<uint64_t, Point3d> ReadCOLMAPPoints3d(const std::string &path) {
+std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
   // https://colmap.github.io/format.html#points3d-txt
   std::ifstream file(path);
   std::string str;
@@ -89,7 +90,7 @@ std::map<uint64_t, Point3d> ReadCOLMAPPoints3d(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::map<uint64_t, Point3d> points;
+  std::vector<Point3d> points;
 
   while (std::getline(file, str)) {
     // clang-format off
@@ -114,10 +115,18 @@ std::map<uint64_t, Point3d> ReadCOLMAPPoints3d(const std::string &path) {
       point.AddTrackObservation(image_id, p2d_idx);
     }
 
-    points.insert(std::make_pair(id, std::move(point)));
+    points.push_back(point);
   }
 
   return points;
+}
+
+Reconstruction ReadCOLMAPReconstruction(const std::string &dir) {
+  std::filesystem::path base(dir);
+  std::vector<Camera> cameras = ReadCOLMAPCameras(base / "cameras.txt");
+  std::vector<Image> images = ReadCOLMAPImages(base / "images.txt");
+  std::vector<Point3d> points = ReadCOLMAPPoints3d(base / "points3D.txt");
+  return Reconstruction(cameras, images, points);
 }
 
 } // namespace ppr
