@@ -58,5 +58,8 @@ int main(int argc, char *argv[]) {
 
   std::vector<ppr::Image> images = ppr::ReadCOLMAPImages(wspath / "images.txt");
 
+  std::vector<ppr::Point3d> points =
+      ppr::ReadCOLMAPPoints3d(wspath / "points3D.txt");
+
   return 0;
 }

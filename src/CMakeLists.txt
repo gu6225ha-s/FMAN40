@@ -3,6 +3,7 @@ set(SRC_FILES
     colmap.cpp
     colmap.h
     image.h
+    point3d.h
     str_util.cpp
     str_util.h)
 
