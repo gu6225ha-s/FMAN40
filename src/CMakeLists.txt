@@ -2,6 +2,7 @@ set(SRC_FILES
     camera.h
     colmap.cpp
     colmap.h
+    image.h
     str_util.cpp
     str_util.h)
 

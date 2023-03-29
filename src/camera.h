@@ -8,20 +8,18 @@ namespace ppr {
 
 class Camera {
 public:
-  Camera(uint32_t id, double fx, double fy, double cx, double cy)
-      : id_(id), fx_(fx), fy_(fy), cx_(cx), cy_(cy) {}
-  Camera(uint32_t id, double f, double cx, double cy)
-      : Camera(id, f, f, cx, cy) {}
+  Camera(uint32_t id, const Eigen::Vector2d &f, const Eigen::Vector2d &c)
+      : id_(id), f_(f), c_(c) {}
 
   uint32_t Id() const { return id_; }
   Eigen::Matrix3d K() const {
-    return Eigen::Matrix3d({{fx_, 0, cx_}, {0, fy_, cy_}, {0, 0, 1}});
+    return Eigen::Matrix3d({{f_(0), 0, c_(0)}, {0, f_(1), c_(1)}, {0, 0, 1}});
   };
 
 private:
-  uint32_t id_;    // Unique ID
-  double fx_, fy_; // Focal length
-  double cx_, cy_; // Principal point
+  uint32_t id_;       // Unique ID
+  Eigen::Vector2d f_; // Focal length
+  Eigen::Vector2d c_; // Principal point
 };
 
 } // namespace ppr

@@ -53,11 +53,10 @@ int main(int argc, char *argv[]) {
 
   std::filesystem::path wspath(workspace);
 
-  // Read intrinsic camera parameters
   std::vector<ppr::Camera> cameras =
-      ppr::ReadCOLMAPCameras((wspath / "cameras.txt"));
+      ppr::ReadCOLMAPCameras(wspath / "cameras.txt");
 
-  // TODO: Read extrinsic camera parameters from images.txt
+  std::vector<ppr::Image> images = ppr::ReadCOLMAPImages(wspath / "images.txt");
 
   return 0;
 }
