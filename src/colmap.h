@@ -7,7 +7,7 @@
 
 namespace ppr {
 
-std::vector<CameraIntrinsics> ReadCOLMAPIntrinsics(const std::string &path);
+std::vector<Camera> ReadCOLMAPCameras(const std::string &path);
 
 } // namespace ppr
 

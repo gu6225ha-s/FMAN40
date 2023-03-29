@@ -4,7 +4,7 @@
 
 namespace ppr {
 
-std::vector<CameraIntrinsics> ReadCOLMAPIntrinsics(const std::string &path) {
+std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
   // https://colmap.github.io/format.html#cameras-txt
   std::ifstream file(path);
   std::string str;
@@ -14,17 +14,17 @@ std::vector<CameraIntrinsics> ReadCOLMAPIntrinsics(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::vector<CameraIntrinsics> intrinsics;
+  std::vector<Camera> intrinsics;
 
   while (std::getline(file, str)) {
     std::vector<std::string> comp = split(str, " ");
+    uint32_t id = static_cast<uint32_t>(std::stoul(comp[0]));
     if (comp[1] == "SIMPLE_PINHOLE") {
-      intrinsics.push_back(CameraIntrinsics(
-          std::stod(comp[4]), std::stod(comp[5]), std::stod(comp[6])));
+      intrinsics.push_back(Camera(id, std::stod(comp[4]), std::stod(comp[5]),
+                                  std::stod(comp[6])));
     } else if (comp[1] == "PINHOLE") {
-      intrinsics.push_back(
-          CameraIntrinsics(std::stod(comp[4]), std::stod(comp[5]),
-                           std::stod(comp[6]), std::stod(comp[7])));
+      intrinsics.push_back(Camera(id, std::stod(comp[4]), std::stod(comp[5]),
+                                  std::stod(comp[6]), std::stod(comp[7])));
     } else {
       throw std::runtime_error("Unsupported camera: " + comp[1]);
     }
