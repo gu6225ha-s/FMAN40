@@ -11,14 +11,15 @@ public:
   Polygon() {}
   Polygon(const std::vector<T> &points) : points_(points) {}
 
-  bool PointInside(const Eigen::Vector2d &point);
+  const std::vector<T> &Points() const { return points_; }
+  bool PointInside(const Eigen::Vector2d &point) const;
 
 private:
   std::vector<T> points_; // Points
 };
 
 template <typename T>
-bool Polygon<T>::PointInside(const Eigen::Vector2d &point) {
+bool Polygon<T>::PointInside(const Eigen::Vector2d &point) const {
   // https://wrfranklin.org/Research/Short_Notes/pnpoly.html
   bool inside;
   for (int i = 0, j = points_.size() - 1; i < points_.size(); j = i++) {
