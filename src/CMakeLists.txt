@@ -4,6 +4,7 @@ set(SRC_FILES
     colmap.h
     image.h
     point3d.h
+    polygon.h
     reconstruction.h
     str_util.cpp
     str_util.h)

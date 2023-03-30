@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <vector>
 
-typedef Eigen::Matrix<unsigned char, 3, 1> Vector3uc;
-
 namespace ppr {
+
+typedef Eigen::Matrix<unsigned char, 3, 1> Vector3uc;
 
 class Point3d {
 public:
