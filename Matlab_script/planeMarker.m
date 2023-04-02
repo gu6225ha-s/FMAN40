@@ -16,8 +16,8 @@ for i = 1:1:size(images,1)
     waitfor(f)
     % Find points within the polygon
     plane_corners{i} = h.Position;
-    poly = plane_corners{i};
-    [in,edge] = inpolygon(image_2D(:,1),image_2D(:,2),poly(:,1),poly(:,2));
+    polygon = plane_corners{i};
+    [in,edge] = inpolygon(image_2D(:,1),image_2D(:,2),polygon(:,1),polygon(:,2));
     in = in + edge;
 
     plane.image_id = image_infor.image_id;

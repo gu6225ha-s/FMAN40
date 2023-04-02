@@ -20,3 +20,12 @@ folder_path = 'E:\MSc_Lund_Machine_Learning\Semester_2\Project\Matlab_script';
 file_name = '2DPlanePoints.txt';
 total_path = append(folder_path,'\',file_name);
 expertToText(total_path,plane_points)
+
+%% Check the result
+k = 2; % Which figure to show
+test = plane_points{k};
+points = test.point2D;
+figure()
+imagesc(images{k})
+hold on
+plot(points(:,1),points(:,2),'.')
