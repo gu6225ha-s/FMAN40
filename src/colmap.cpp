@@ -56,8 +56,8 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
     // #   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME
     std::vector<std::string> comp = SplitString(str, " ");
     uint32_t id = static_cast<uint32_t>(std::stoul(comp[0]));
-    Eigen::Vector4d q({std::stod(comp[1]), std::stod(comp[2]),
-                       std::stod(comp[3]), std::stod(comp[4])});
+    Eigen::Quaterniond q({std::stod(comp[1]), std::stod(comp[2]),
+                          std::stod(comp[3]), std::stod(comp[4])});
     Eigen::Vector3d t(
         {std::stod(comp[5]), std::stod(comp[6]), std::stod(comp[7])});
     uint32_t cam_id = static_cast<uint32_t>(std::stoul(comp[8]));

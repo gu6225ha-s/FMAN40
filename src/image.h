@@ -10,17 +10,13 @@ namespace ppr {
 
 class Image {
 public:
-  Image(uint32_t id, const Eigen::Vector4d &q, const Eigen::Vector3d &t,
+  Image(uint32_t id, const Eigen::Quaterniond &q, const Eigen::Vector3d &t,
         uint32_t cam_id, const std::string &name)
       : id_(id), q_(q), t_(t), cam_id_(cam_id), name_(name) {}
 
   uint32_t Id() const { return id_; }
-  const Eigen::Vector4d &Q() const { return q_; }
+  const Eigen::Quaterniond &Q() const { return q_; }
   const Eigen::Vector3d &T() const { return t_; }
-  Eigen::Matrix3d R() const {
-    const Eigen::Quaterniond q(q_);
-    return q.toRotationMatrix();
-  }
   uint32_t CamId() const { return cam_id_; };
   const std::string &Name() const { return name_; }
   const std::vector<Eigen::Vector2d> &Points() const { return points_; }
@@ -32,7 +28,7 @@ public:
 
 private:
   uint32_t id_;                         // Unique ID
-  Eigen::Vector4d q_;                   // Rotation
+  Eigen::Quaterniond q_;                // Rotation
   Eigen::Vector3d t_;                   // Translation
   uint32_t cam_id_;                     // Camera ID
   std::string name_;                    // Filename
