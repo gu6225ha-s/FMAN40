@@ -6,8 +6,8 @@ set(SRC_FILES
     point3d.h
     polygon.h
     reconstruction.h
-    str_util.cpp
-    str_util.h)
+    util.cpp
+    util.h)
 
 add_library(ppr
             ${SRC_FILES})

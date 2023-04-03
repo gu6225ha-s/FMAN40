@@ -1,5 +1,5 @@
-#ifndef STR_UTIL_H_
-#define STR_UTIL_H_
+#ifndef UTIL_H_
+#define UTIL_H_
 
 #include <string>
 #include <vector>
@@ -11,4 +11,4 @@ std::vector<std::string> split(const std::string &str,
 
 } // namespace ppr
 
-#endif /* STR_UTIL_H_ */
+#endif /* UTIL_H_ */
