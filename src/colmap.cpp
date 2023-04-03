@@ -19,7 +19,7 @@ std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
 
   while (std::getline(file, str)) {
     // #   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]
-    std::vector<std::string> comp = split(str, " ");
+    std::vector<std::string> comp = SplitString(str, " ");
     uint32_t id = static_cast<uint32_t>(std::stoul(comp[0]));
     Eigen::Vector2d f, c;
     if (comp[1] == "SIMPLE_PINHOLE") {
@@ -54,7 +54,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
 
   while (std::getline(file, str)) {
     // #   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME
-    std::vector<std::string> comp = split(str, " ");
+    std::vector<std::string> comp = SplitString(str, " ");
     uint32_t id = static_cast<uint32_t>(std::stoul(comp[0]));
     Eigen::Vector4d q({std::stod(comp[1]), std::stod(comp[2]),
                        std::stod(comp[3]), std::stod(comp[4])});
@@ -66,7 +66,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
 
     // #   POINTS2D[] as (X, Y, POINT3D_ID)
     std::getline(file, str);
-    comp = split(str, " ");
+    comp = SplitString(str, " ");
     for (int i = 0; i < comp.size() / 3; i++) {
       Eigen::Vector2d point(
           {std::stod(comp[3 * i]), std::stod(comp[3 * i + 1])});
@@ -96,7 +96,7 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
     // clang-format off
     // #   POINT3D_ID, X, Y, Z, R, G, B, ERROR, TRACK[] as (IMAGE_ID, POINT2D_IDX)
     // clang-format on
-    std::vector<std::string> comp = split(str, " ");
+    std::vector<std::string> comp = SplitString(str, " ");
     uint64_t id = static_cast<uint64_t>(std::stoull(comp[0]));
     Eigen::Vector3d xyz(
         {std::stod(comp[1]), std::stod(comp[2]), std::stod(comp[3])});
