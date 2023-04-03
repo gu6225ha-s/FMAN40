@@ -17,6 +17,10 @@ public:
   uint32_t Id() const { return id_; }
   const Eigen::Vector4d &Q() const { return q_; }
   const Eigen::Vector3d &T() const { return t_; }
+  Eigen::Matrix3d R() const {
+    const Eigen::Quaterniond q(q_);
+    return q.toRotationMatrix();
+  }
   uint32_t CamId() const { return cam_id_; };
   const std::string &Name() const { return name_; }
   const std::vector<Eigen::Vector2d> &Points() const { return points_; }
