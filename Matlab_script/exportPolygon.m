@@ -1,4 +1,4 @@
-function expertPolygon(total_path,polygon)
+function exportPolygon(total_path,polygon)
 % By JLL
 comment1 = '# Image list with multiple lines of data per image:';
 comment2 = '# IMAGE_ID, IMAGE_NAME, CAMERA_ID, The number of polygons contained';

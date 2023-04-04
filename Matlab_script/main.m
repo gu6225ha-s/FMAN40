@@ -19,4 +19,4 @@ polygon = planeMarker(images,images_txt);
 folder_path = 'E:\MSc_Lund_Machine_Learning\Semester_2\Project\Matlab_script';
 file_name = 'Polygons.txt';
 total_path = append(folder_path,'\',file_name);
-expertPolygon(total_path,polygon)
+exportPolygon(total_path,polygon)
