@@ -18,7 +18,7 @@ public:
   Eigen::Vector3d Solve() const;
 
 private:
-  Eigen::MatrixXd A_, b_;
+  std::vector<Eigen::Vector3d> x_, y_, Rx_, t_;
 };
 
 } // namespace ppr

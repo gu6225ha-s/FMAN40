@@ -1,4 +1,5 @@
 #include "util.h"
+#include <iostream>
 
 namespace ppr {
 
@@ -20,20 +21,27 @@ void PlaneEstimator::AddCorrespondence(const Eigen::Vector3d &x,
                                        const Eigen::Vector3d &y,
                                        const Eigen::Matrix3d &R,
                                        const Eigen::Vector3d &t) {
-  Eigen::Index n = A_.rows() / 3;
-
-  A_.conservativeResize(3 * (n + 1), 3 + (n + 1));
-  A_.block(0, 3 + n, 3 * n, 1).setZero();
-  A_.block(3 * n, 0, 3, 3) = t * x.transpose();
-  A_.block(3 * n, 3, 3, n).setZero();
-  A_.block(3 * n, 3 + n, 3, 1) = y;
-
-  b_.conservativeResize(3 * (n + 1), 1);
-  b_.block(3 * n, 0, 3, 1) = R * x;
+  x_.push_back(x);
+  y_.push_back(y);
+  Rx_.push_back(R * x);
+  t_.push_back(t);
 }
 
 Eigen::Vector3d PlaneEstimator::Solve() const {
-  Eigen::VectorXd x = A_.colPivHouseholderQr().solve(b_);
+  size_t n = x_.size();
+  Eigen::MatrixXd A(3 * n, 3 + n);
+  Eigen::MatrixXd b(3 * n, 1);
+
+  A.setZero();
+  b.setZero();
+
+  for (size_t i = 0; i < n; i++) {
+    A.block(3 * i, 0, 3, 3) = t_[i] * x_[i].transpose();
+    A.block(3 * i, 3 + i, 3, 1) = y_[i];
+    b.block(3 * i, 0, 3, 1) = Rx_[i];
+  }
+
+  Eigen::VectorXd x = A.colPivHouseholderQr().solve(b);
   return x.head(3);
 }
 
