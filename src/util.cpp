@@ -1,4 +1,5 @@
 #include "util.h"
+#include <fstream>
 
 namespace ppr {
 
@@ -14,6 +15,39 @@ std::vector<std::string> SplitString(const std::string &str,
 
   ret.push_back(str.substr(start));
   return ret;
+}
+
+std::vector<std::pair<std::string, ppr::Polygon2d>>
+ReadPolygons(const std::string &path) {
+  std::ifstream file(path);
+  std::string str;
+
+  // Skip first six lines
+  for (int i = 0; i < 6; i++) {
+    std::getline(file, str);
+  }
+
+  std::vector<std::pair<std::string, Polygon2d>> polygons;
+
+  while (std::getline(file, str)) {
+    // Image Id, Image name, Camera Id, Num polygons
+    std::vector<std::string> comp = SplitString(str, " ");
+    std::string name(comp[2]);
+
+    int n_poly = std::stoi(comp[0]);
+    for (int i = 0; i < n_poly; i++) {
+      std::vector<Eigen::Vector2d> points;
+      std::getline(file, str);
+      comp = SplitString(str, ",");
+
+      for (size_t j = 0; j < comp.size() / 2; j++) {
+        points.emplace_back(std::stod(comp[2 * j]), std::stod(comp[2 * j + 1]));
+      }
+      polygons.push_back(std::make_pair(name, Polygon2d(points)));
+    }
+  }
+
+  return polygons;
 }
 
 void PlaneEstimator::AddCorrespondence(const Eigen::Vector3d &x,

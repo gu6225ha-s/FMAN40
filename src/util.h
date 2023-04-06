@@ -1,6 +1,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include "polygon.h"
 #include <Eigen/Dense>
 #include <string>
 #include <vector>
@@ -9,6 +10,9 @@ namespace ppr {
 
 std::vector<std::string> SplitString(const std::string &str,
                                      const std::string &delim);
+
+std::vector<std::pair<std::string, ppr::Polygon2d>>
+ReadPolygons(const std::string &path);
 
 class PlaneEstimator {
 public:

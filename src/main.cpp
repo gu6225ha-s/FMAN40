@@ -1,4 +1,5 @@
 #include "colmap.h"
+#include "util.h"
 #include <algorithm>
 #include <iostream>
 
@@ -36,10 +37,11 @@ int main(int argc, char *argv[]) {
     std::cout << "Piecewise Planar Reconstructions from Multiple Homographies"
               << std::endl
               << "Usage:" << std::endl
-              << " ppr [-h] -ws WORKSPACE" << std::endl
+              << " ppr [-h] -ws WORKSPACE -poly POLYGONS" << std::endl
               << "Options:" << std::endl
-              << " -h, --help       Show help message" << std::endl
-              << " -ws, --workspace COLMAP workspace folder" << std::endl;
+              << " -h, --help        Show help message" << std::endl
+              << " -ws, --workspace  COLMAP workspace folder" << std::endl
+              << " -poly, --polygons Polygon file" << std::endl;
     return 0;
   }
 
@@ -55,6 +57,25 @@ int main(int argc, char *argv[]) {
     std::cerr << "Can only handle a single camera" << std::endl;
     return -1;
   }
+
+  char *polygons = GetLongShortOption(argv, argv + argc, "--polygons", "-poly");
+  if (polygons == nullptr) {
+    std::cerr << "Path to polygon file must be specified" << std::endl;
+    return -1;
+  }
+
+  std::vector<std::pair<std::string, ppr::Polygon2d>> polys2d =
+      ppr::ReadPolygons(polygons);
+  std::vector<ppr::Polygon3d> polys3d;
+
+  for (const auto &item : polys2d) {
+    const ppr::Image *image = reconstruction.FindImage(item.first);
+    Eigen::Vector3d n = reconstruction.EstimatePlane(item.second, *image);
+    ppr::Polygon3d p3d = reconstruction.ProjectPolygon(item.second, *image, n);
+    polys3d.emplace_back(p3d);
+  }
+
+  // TODO: Tessellate and save 3D polygons
 
   return 0;
 }
