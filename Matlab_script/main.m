@@ -4,7 +4,7 @@ clear;close;clc;
 % Set this path to your image folder 
 path_images = 'F:\COLMAP_project\testSet\Test_1_28_3\images';
 imds = imageDatastore(fullfile(path_images),...
-"FileExtensions",".jpg","LabelSource","foldernames");
+"FileExtensions",[".jpg",".jpeg"],"LabelSource","foldernames");
 images = readall(imds);
 %% Read the COLMAP txt files
 % Set this path to your COLMAP resulting .txt files folder
