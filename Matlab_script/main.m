@@ -18,5 +18,5 @@ polygon = planeMarker(images,images_txt);
 % Set this path to where you what export the result
 folder_path = 'E:\MSc_Lund_Machine_Learning\Semester_2\Project\Matlab_script';
 file_name = 'Polygons.txt';
-total_path = append(folder_path,'\',file_name);
+total_path = append(folder_path,filesep,file_name);
 exportPolygon(total_path,polygon)
