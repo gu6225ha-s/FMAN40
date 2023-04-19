@@ -38,10 +38,10 @@ private:
       delete this;
     }
 
-    Vertex *GetEar() {
+    Vertex *GetEar(bool clockwise) {
       Vertex *vert = this;
       do {
-        if (vert->IsEar()) {
+        if (vert->IsEar(clockwise)) {
           return vert;
         }
         vert = vert->next;
@@ -49,8 +49,9 @@ private:
       return nullptr;
     }
 
-    bool IsEar() const {
-      bool convex = TriangleArea(prev->point, point, next->point) >= 0;
+    bool IsEar(bool clockwise) const {
+      double area = TriangleArea(prev->point, point, next->point);
+      bool convex = (clockwise && area <= 0) || (!clockwise && area >= 0);
       if (!convex) {
         return false;
       }
@@ -109,8 +110,9 @@ template <typename T> std::vector<Triangle> Polygon<T>::Triangulate() const {
   std::vector<Triangle> triangles;
   size_t N = points_.size();
   Vertex *vert = head;
+  bool clockwise = Area() < 0;
   while (N >= 3) {
-    vert = vert->GetEar();
+    vert = vert->GetEar(clockwise);
     assert(vert);
     triangles.emplace_back(vert->prev->index, vert->index, vert->next->index);
     vert = vert->next;

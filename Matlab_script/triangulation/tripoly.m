@@ -24,18 +24,28 @@ head.Prev = tail;
 % Triangulate
 I = zeros(N-2,3);
 i = 1;
+clockwise = polyarea(P)<0;
 while N >= 3
-    [I(i,:),head] = getear(head);
+    [I(i,:),head] = getear(head,clockwise);
     i = i+1;
     N = N-1;
 end
 end
 
-function [ear,vert] = getear(vert)
+function area = polyarea(P)
+N = size(P,1);
+area = 0;
+for i = 1:N
+    j = 1+mod(i,N);
+    area = area+P(i,1)*P(j,2)-P(j,1)*P(i,2);
+end
+end
+
+function [ear,vert] = getear(vert,clockwise)
 %GETEAR Find one "ear" of the polygon and remove it.
 v = vert;
 while true
-    if isear(v)
+    if isear(v,clockwise)
         ear = [v.Prev.Index v.Index, v.Next.Index];
         vert = v.Next;
         v.remove();
@@ -49,9 +59,11 @@ end
 error('Failed to find ear.');
 end
 
-function ear = isear(vert)
+function ear = isear(vert,clockwise)
 %ISEAR Check if (vert.Prev,vert,vert.Next) is an "ear".
-if isconvex(vert.Prev.Position,vert.Position,vert.Next.Position)
+area = triarea(vert.Prev.Position,vert.Position,vert.Next.Position);
+convex = (clockwise&&area<=0)||(~clockwise&&area>=0);
+if convex
     ear = true;
     v = vert.Next.Next;
     while v ~= vert.Prev
@@ -69,11 +81,6 @@ end
 function area = triarea(a,b,c)
 %TRIAREA Calculate the signed area (multiplied by two) of triangle (a,b,c).
 area = a(1)*(b(2)-c(2))+b(1)*(c(2)-a(2))+c(1)*(a(2)-b(2));
-end
-
-function convex = isconvex(a,b,c)
-%ISCONVEX Check if b is on the right of (or on) the line segment ac.
-convex = triarea(a,b,c)>=0;
 end
 
 function inside = intriangle(a,b,c,p)
