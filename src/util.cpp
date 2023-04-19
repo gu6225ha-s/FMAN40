@@ -32,9 +32,9 @@ ReadPolygons(const std::string &path) {
   while (std::getline(file, str)) {
     // Image Id, Image name, Camera Id, Num polygons
     std::vector<std::string> comp = SplitString(str, " ");
-    std::string name(comp[2]);
+    std::string name(comp[1]);
 
-    int n_poly = std::stoi(comp[0]);
+    int n_poly = std::stoi(comp[3]);
     for (int i = 0; i < n_poly; i++) {
       std::vector<Eigen::Vector2d> points;
       std::getline(file, str);
