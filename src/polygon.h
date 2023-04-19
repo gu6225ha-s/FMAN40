@@ -13,6 +13,7 @@ public:
 
   const std::vector<T> &Points() const { return points_; }
   bool PointInside(const Eigen::Vector2d &point) const;
+  double Area() const;
 
 private:
   std::vector<T> points_; // Points
@@ -32,6 +33,15 @@ bool Polygon<T>::PointInside(const Eigen::Vector2d &point) const {
     }
   }
   return inside;
+}
+
+template <typename T> double Polygon<T>::Area() const {
+  double area = 0.0;
+  for (size_t i = 0; i < points_.size(); i++) {
+    size_t j = (i + 1) % points_.size();
+    area += points_[i].x() * points_[j].y() - points_[j].x() * points_[i].y();
+  }
+  return 0.5 * area;
 }
 
 typedef Polygon<Eigen::Vector2d> Polygon2d;
