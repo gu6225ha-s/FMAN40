@@ -21,7 +21,7 @@ private:
 template <typename T>
 bool Polygon<T>::PointInside(const Eigen::Vector2d &point) const {
   // https://wrfranklin.org/Research/Short_Notes/pnpoly.html
-  bool inside;
+  bool inside = false;
   for (int i = 0, j = points_.size() - 1; i < points_.size(); j = i++) {
     if ((points_[i].y() > point.y()) != (points_[j].y() > point.y()) &&
         (point.x() < (points_[j].x() - points_[i].x()) *
