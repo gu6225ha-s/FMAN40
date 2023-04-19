@@ -14,10 +14,8 @@ head = dlvertex(P(1,:),1);
 tail = head;
 for i = 2:N
     vert = dlvertex(P(i,:),i);
-    if ~isempty(tail)
-        tail.Next = vert;
-        vert.Prev = tail;
-    end
+    tail.Next = vert;
+    vert.Prev = tail;
     tail = vert;
 end
 tail.Next = head;
