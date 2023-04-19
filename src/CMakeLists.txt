@@ -14,6 +14,7 @@ set(SRC_FILES
 add_library(ppr
             ${SRC_FILES})
 target_link_libraries(ppr Eigen3::Eigen)
+target_compile_options(ppr PRIVATE -Wall)
 
 add_executable(ppr-bin main.cpp)
 target_link_libraries(ppr-bin ppr)
