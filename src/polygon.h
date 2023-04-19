@@ -1,10 +1,13 @@
 #ifndef POLYGON_H_
 #define POLYGON_H_
 
+#include "geometry.h"
 #include <Eigen/Dense>
 #include <vector>
 
 namespace ppr {
+
+typedef std::tuple<int, int, int> Triangle;
 
 template <typename T> class Polygon {
 public:
@@ -14,9 +17,57 @@ public:
   const std::vector<T> &Points() const { return points_; }
   bool PointInside(const Eigen::Vector2d &point) const;
   double Area() const;
+  std::vector<Triangle> Triangulate() const;
 
 private:
   std::vector<T> points_; // Points
+
+  // Doubly linked vertex struct used for triangulation
+  typedef struct Vertex {
+    Vertex(const Eigen::VectorXd &point, int index)
+        : point(point.x(), point.y()), index(index) {}
+
+    void Delete() {
+      if (prev) {
+        prev->next = next;
+      }
+      if (next) {
+        next->prev = prev;
+      }
+      prev = next = nullptr;
+      delete this;
+    }
+
+    Vertex *GetEar() {
+      Vertex *vert = this;
+      do {
+        if (vert->IsEar()) {
+          return vert;
+        }
+        vert = vert->next;
+      } while (vert != this);
+      return nullptr;
+    }
+
+    bool IsEar() const {
+      bool convex = TriangleArea(prev->point, point, next->point) >= 0;
+      if (!convex) {
+        return false;
+      }
+      Vertex *vert = next->next;
+      while (vert != prev) {
+        if (PointInTriangle(prev->point, point, next->point, vert->point)) {
+          return false;
+        }
+        vert = vert->next;
+      }
+      return true;
+    }
+
+    Eigen::Vector2d point;
+    int index;
+    Vertex *prev, *next;
+  } Vertex;
 };
 
 template <typename T>
@@ -42,6 +93,35 @@ template <typename T> double Polygon<T>::Area() const {
     area += points_[i].x() * points_[j].y() - points_[j].x() * points_[i].y();
   }
   return 0.5 * area;
+}
+
+template <typename T> std::vector<Triangle> Polygon<T>::Triangulate() const {
+  Vertex *head = new Vertex(points_[0], 0), *tail = head;
+  for (size_t i = 1; i < points_.size(); i++) {
+    Vertex *vert = new Vertex(points_[i], i);
+    tail->next = vert;
+    vert->prev = tail;
+    tail = vert;
+  }
+  tail->next = head;
+  head->prev = tail;
+
+  std::vector<Triangle> triangles;
+  size_t N = points_.size();
+  Vertex *vert = head;
+  while (N >= 3) {
+    vert = vert->GetEar();
+    assert(vert);
+    triangles.emplace_back(vert->prev->index, vert->index, vert->next->index);
+    vert = vert->next;
+    vert->prev->Delete();
+    N--;
+  }
+
+  vert->next->Delete();
+  vert->Delete();
+
+  return triangles;
 }
 
 typedef Polygon<Eigen::Vector2d> Polygon2d;
