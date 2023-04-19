@@ -1,4 +1,5 @@
 #include "colmap.h"
+#include "mesh.h"
 #include "util.h"
 #include <algorithm>
 #include <iostream>
@@ -66,15 +67,16 @@ int main(int argc, char *argv[]) {
 
   std::vector<std::pair<std::string, ppr::Polygon2d>> polys2d =
       ppr::ReadPolygons(polygons);
+  ppr::Mesh mesh;
 
   for (const auto &item : polys2d) {
     const ppr::Image *image = reconstruction.FindImage(item.first);
     assert(image);
-    std::vector<ppr::Triangle> triangles = item.second.Triangulate();
+    std::vector<std::tuple<int, int, int>> triangles =
+        item.second.Triangulate();
     Eigen::Vector3d n = reconstruction.EstimatePlane(item.second, *image);
     ppr::Polygon3d p3d = reconstruction.ProjectPolygon(item.second, *image, n);
-
-    // TODO: Add triangulated 3D polygon to output 3D model
+    mesh.AddTriangles(p3d.Points(), triangles);
   }
 
   // TODO: Save 3D model

@@ -7,8 +7,6 @@
 
 namespace ppr {
 
-typedef std::tuple<int, int, int> Triangle;
-
 template <typename T> class Polygon {
 public:
   Polygon() {}
@@ -17,7 +15,7 @@ public:
   const std::vector<T> &Points() const { return points_; }
   bool PointInside(const Eigen::Vector2d &point) const;
   double Area() const;
-  std::vector<Triangle> Triangulate() const;
+  std::vector<std::tuple<int, int, int>> Triangulate() const;
 
 private:
   std::vector<T> points_; // Points
@@ -96,7 +94,8 @@ template <typename T> double Polygon<T>::Area() const {
   return 0.5 * area;
 }
 
-template <typename T> std::vector<Triangle> Polygon<T>::Triangulate() const {
+template <typename T>
+std::vector<std::tuple<int, int, int>> Polygon<T>::Triangulate() const {
   Vertex *head = new Vertex(points_[0], 0), *tail = head;
   for (size_t i = 1; i < points_.size(); i++) {
     Vertex *vert = new Vertex(points_[i], i);
@@ -107,7 +106,7 @@ template <typename T> std::vector<Triangle> Polygon<T>::Triangulate() const {
   tail->next = head;
   head->prev = tail;
 
-  std::vector<Triangle> triangles;
+  std::vector<std::tuple<int, int, int>> triangles;
   size_t N = points_.size();
   Vertex *vert = head;
   bool clockwise = Area() < 0;

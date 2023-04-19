@@ -4,6 +4,8 @@ set(SRC_FILES
     colmap.h
     geometry.h
     image.h
+    mesh.h
+    mesh.cpp
     point3d.h
     polygon.h
     reconstruction.cpp
