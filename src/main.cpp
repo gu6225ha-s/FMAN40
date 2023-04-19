@@ -66,16 +66,18 @@ int main(int argc, char *argv[]) {
 
   std::vector<std::pair<std::string, ppr::Polygon2d>> polys2d =
       ppr::ReadPolygons(polygons);
-  std::vector<ppr::Polygon3d> polys3d;
 
   for (const auto &item : polys2d) {
     const ppr::Image *image = reconstruction.FindImage(item.first);
+    assert(image);
+    std::vector<ppr::Triangle> triangles = item.second.Triangulate();
     Eigen::Vector3d n = reconstruction.EstimatePlane(item.second, *image);
     ppr::Polygon3d p3d = reconstruction.ProjectPolygon(item.second, *image, n);
-    polys3d.emplace_back(p3d);
+
+    // TODO: Add triangulated 3D polygon to output 3D model
   }
 
-  // TODO: Tessellate and save 3D polygons
+  // TODO: Save 3D model
 
   return 0;
 }
