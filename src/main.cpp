@@ -38,11 +38,13 @@ int main(int argc, char *argv[]) {
     std::cout << "Piecewise Planar Reconstructions from Multiple Homographies"
               << std::endl
               << "Usage:" << std::endl
-              << " ppr [-h] -ws WORKSPACE -poly POLYGONS" << std::endl
+              << " ppr [-h] -ws WORKSPACE -poly POLYGONS [-out OUTPUT]"
+              << std::endl
               << "Options:" << std::endl
               << " -h, --help        Show help message" << std::endl
               << " -ws, --workspace  COLMAP workspace folder" << std::endl
-              << " -poly, --polygons Polygon file" << std::endl;
+              << " -poly, --polygons Polygon file" << std::endl
+              << " -out, --output    Output glTF file" << std::endl;
     return 0;
   }
 
@@ -79,7 +81,11 @@ int main(int argc, char *argv[]) {
     mesh.AddTriangles(p3d.Points(), triangles);
   }
 
-  // TODO: Save 3D model
+  char *output = GetLongShortOption(argv, argv + argc, "--output", "-out");
+  if (output) {
+    mesh.WriteGltf(output);
+    std::cout << "Wrote " << output << std::endl;
+  }
 
   return 0;
 }
