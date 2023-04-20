@@ -32,9 +32,13 @@ Compile:
 make
 ```
 
+## Running
+
+First do a sparse reconstruction with [COLMAP](https://colmap.github.io) and export the model as text. Then draw one or more polygons, representing planar surfaces, using the MATLAB script [main.m](Matlab_script/main.m). Finally build and run the `ppr` executable, specifying the directory with the sparse reconstruction and the path to the polygon file. The result is a glTF file that can be opened in for example in [this viewer](https://gltf-viewer.donmccurdy.com).
+
 ## Datasets
 
-TODO
+The [datasets](datasets) folder contains a few sample datasets and pre-generated sparse reconstructions and polygon files.
 
 ## Miscellaneous
 
