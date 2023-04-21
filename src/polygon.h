@@ -3,6 +3,7 @@
 
 #include "geometry.h"
 #include <Eigen/Dense>
+#include <algorithm>
 #include <vector>
 
 namespace ppr {
@@ -15,6 +16,7 @@ public:
   const std::vector<T> &Points() const { return points_; }
   bool PointInside(const Eigen::Vector2d &point) const;
   double Area() const;
+  void Reverse();
   std::vector<std::tuple<int, int, int>> Triangulate() const;
 
 private:
@@ -92,6 +94,10 @@ template <typename T> double Polygon<T>::Area() const {
     area += points_[i].x() * points_[j].y() - points_[j].x() * points_[i].y();
   }
   return 0.5 * area;
+}
+
+template <typename T> void Polygon<T>::Reverse() {
+  std::reverse(points_.begin(), points_.end());
 }
 
 template <typename T>
