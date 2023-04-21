@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  std::cout << "Reading COLMAP reconstruction from " << workspace << std::endl;
   ppr::Reconstruction reconstruction = ppr::ReadCOLMAPReconstruction(workspace);
   if (reconstruction.Cameras().size() != 1) {
     std::cerr << "Can only handle a single camera" << std::endl;
@@ -67,18 +68,27 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
+  std::cout << "Reading polygons from " << polygons << std::endl;
   std::vector<std::pair<std::string, ppr::Polygon2d>> polys2d =
       ppr::ReadPolygons(polygons);
-  std::vector<ppr::Mesh> meshes;
 
-  for (const auto &item : polys2d) {
-    const ppr::Image *image = reconstruction.FindImage(item.first);
+  std::cout << "Creating piecewise planar reconstruction" << std::endl;
+  std::vector<ppr::Mesh> meshes;
+  for (size_t i = 0; i < polys2d.size(); i++) {
+    const std::string &image_name = polys2d[i].first;
+    ppr::Polygon2d &poly2d = polys2d[i].second;
+    std::cout << "Processing polygon " << i + 1 << "/" << polys2d.size()
+              << " (image: " << image_name << ")" << std::endl;
+    const ppr::Image *image = reconstruction.FindImage(image_name);
     assert(image);
-    auto triangles = item.second.Triangulate();
+    if (poly2d.Area() > 0) {
+      poly2d.Reverse();
+    }
+    auto triangles = poly2d.Triangulate();
     Eigen::Vector3d color;
-    auto n = reconstruction.EstimatePlane(item.second, *image, color);
-    ppr::Polygon3d p3d = reconstruction.ProjectPolygon(item.second, *image, n);
-    meshes.emplace_back(p3d.Points(), triangles, color);
+    auto n = reconstruction.EstimatePlane(poly2d, *image, color);
+    ppr::Polygon3d poly3d = reconstruction.ProjectPolygon(poly2d, *image, n);
+    meshes.emplace_back(poly3d.Points(), triangles, color);
   }
 
   char *output = GetLongShortOption(argv, argv + argc, "--output", "-out");
