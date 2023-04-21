@@ -15,7 +15,8 @@ const Image *Reconstruction::FindImage(const std::string &name) const {
 }
 
 Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
-                                              const Image &image) const {
+                                              const Image &image,
+                                              Eigen::Vector3d &color) const {
   const std::vector<Eigen::Vector2d> &points = image.Points();
   const std::vector<uint64_t> &p3d_ids = image.P3dIds();
   const Eigen::Matrix3d R1 = image.Q().toRotationMatrix();
@@ -23,6 +24,9 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   const Eigen::Matrix3d &K = GetCamera(image.CamId()).K();
   const Eigen::Matrix3d Kinv = K.inverse();
   PlaneEstimator plane_estimator;
+
+  color.setZero();
+  size_t n_pts = 0;
 
   for (size_t i = 0; i < points.size(); i++) {
     const Eigen::Vector2d &x1 = points[i];
@@ -35,7 +39,12 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
       continue;
     }
 
-    for (const auto &item : GetPoint3d(p3d_ids[i]).Track()) {
+    const Point3d &point3d = GetPoint3d(p3d_ids[i]);
+    color += point3d.Color().cast<double>() /
+             std::numeric_limits<unsigned char>::max();
+    n_pts++;
+
+    for (const auto &item : point3d.Track()) {
       if (item.first == image.Id()) {
         continue;
       }
@@ -52,6 +61,7 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
     }
   }
 
+  color /= n_pts;
   const Eigen::Vector3d n = plane_estimator.Solve();
   return n.transpose() * R1 / (n.transpose() * t1 + 1);
 }

@@ -69,21 +69,21 @@ int main(int argc, char *argv[]) {
 
   std::vector<std::pair<std::string, ppr::Polygon2d>> polys2d =
       ppr::ReadPolygons(polygons);
-  ppr::Mesh mesh;
+  std::vector<ppr::Mesh> meshes;
 
   for (const auto &item : polys2d) {
     const ppr::Image *image = reconstruction.FindImage(item.first);
     assert(image);
-    std::vector<std::tuple<int, int, int>> triangles =
-        item.second.Triangulate();
-    Eigen::Vector3d n = reconstruction.EstimatePlane(item.second, *image);
+    auto triangles = item.second.Triangulate();
+    Eigen::Vector3d color;
+    auto n = reconstruction.EstimatePlane(item.second, *image, color);
     ppr::Polygon3d p3d = reconstruction.ProjectPolygon(item.second, *image, n);
-    mesh.AddTriangles(p3d.Points(), triangles);
+    meshes.emplace_back(p3d.Points(), triangles, color);
   }
 
   char *output = GetLongShortOption(argv, argv + argc, "--output", "-out");
   if (output) {
-    mesh.WriteGltf(output);
+    WriteGltf(meshes, output);
     std::cout << "Wrote " << output << std::endl;
   }
 

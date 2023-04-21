@@ -1,6 +1,7 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include "mesh.h"
 #include "polygon.h"
 #include <Eigen/Dense>
 #include <string>
@@ -13,6 +14,8 @@ std::vector<std::string> SplitString(const std::string &str,
 
 std::vector<std::pair<std::string, ppr::Polygon2d>>
 ReadPolygons(const std::string &path);
+
+void WriteGltf(const std::vector<Mesh> &meshes, const std::string &path);
 
 class PlaneEstimator {
 public:

@@ -36,8 +36,8 @@ public:
   const Point3d &GetPoint3d(uint64_t id) const { return points3d_.at(id); }
 
   const Image *FindImage(const std::string &name) const;
-  Eigen::Vector3d EstimatePlane(const Polygon2d &polygon2d,
-                                const Image &image) const;
+  Eigen::Vector3d EstimatePlane(const Polygon2d &polygon2d, const Image &image,
+                                Eigen::Vector3d &color) const;
   Polygon3d ProjectPolygon(const Polygon2d &polygon2d, const Image &image,
                            const Eigen::Vector3d &plane) const;
 
