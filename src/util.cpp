@@ -1,5 +1,4 @@
 #include "util.h"
-#include <filesystem>
 #include <fstream>
 #include <iomanip>
 
@@ -124,8 +123,12 @@ static void CopyImages(const std::vector<Mesh> &meshes,
   }
 }
 
-void WriteGltf(const std::vector<Mesh> &meshes, const std::string &image_dir,
-               const std::string &gltf_path) {
+void WriteGltf(const std::vector<Mesh> &meshes,
+               const std::filesystem::path &image_dir,
+               const std::filesystem::path &gltf_path) {
+  // Create output directory if it doesn't exist
+  std::filesystem::create_directories(gltf_path.parent_path());
+
   // Write buffer file
   std::filesystem::path bin_path(gltf_path);
   bin_path.replace_extension(".bin");
@@ -133,7 +136,7 @@ void WriteGltf(const std::vector<Mesh> &meshes, const std::string &image_dir,
   WriteGltfBuffer(meshes, bin_path, vert_size, tc_size, tri_size);
 
   // Copy images
-  CopyImages(meshes, image_dir, bin_path.parent_path());
+  CopyImages(meshes, image_dir, gltf_path.parent_path());
 
   // Write glTF file
   int precision = std::numeric_limits<float>::digits10 + 1;

@@ -4,6 +4,7 @@
 #include "mesh.h"
 #include "polygon.h"
 #include <Eigen/Dense>
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -15,8 +16,9 @@ std::vector<std::string> SplitString(const std::string &str,
 std::vector<std::pair<std::string, ppr::Polygon2d>>
 ReadPolygons(const std::string &path);
 
-void WriteGltf(const std::vector<Mesh> &meshes, const std::string &image_dir,
-               const std::string &gltf_path);
+void WriteGltf(const std::vector<Mesh> &meshes,
+               const std::filesystem::path &image_dir,
+               const std::filesystem::path &gltf_path);
 
 class PlaneEstimator {
 public:
