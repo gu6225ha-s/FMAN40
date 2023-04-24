@@ -15,7 +15,8 @@ std::vector<std::string> SplitString(const std::string &str,
 std::vector<std::pair<std::string, ppr::Polygon2d>>
 ReadPolygons(const std::string &path);
 
-void WriteGltf(const std::vector<Mesh> &meshes, const std::string &path);
+void WriteGltf(const std::vector<Mesh> &meshes, const std::string &image_dir,
+               const std::string &gltf_path);
 
 class PlaneEstimator {
 public:
