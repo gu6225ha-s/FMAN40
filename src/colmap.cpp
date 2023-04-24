@@ -21,6 +21,8 @@ std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
     // #   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]
     std::vector<std::string> comp = SplitString(str, " ");
     uint32_t id = static_cast<uint32_t>(std::stoul(comp[0]));
+    size_t width = static_cast<size_t>(std::stoull(comp[2]));
+    size_t height = static_cast<size_t>(std::stoull(comp[3]));
     Eigen::Vector2d f, c;
     if (comp[1] == "SIMPLE_PINHOLE") {
       f(0) = f(1) = std::stod(comp[4]);
@@ -34,7 +36,7 @@ std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
     } else {
       throw std::runtime_error("Unsupported camera: " + comp[1]);
     }
-    cameras.push_back(Camera(id, f, c));
+    cameras.push_back(Camera(id, width, height, f, c));
   }
 
   return cameras;
