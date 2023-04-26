@@ -11,7 +11,7 @@ TODO
 Install [Homebrew](https://brew.sh) then run
 
 ```
-brew install cmake eigen
+brew install cmake eigen libjpeg
 ```
 
 ### Windows
