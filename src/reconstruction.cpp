@@ -1,11 +1,10 @@
 #include "reconstruction.h"
 #include "util.h"
-#include <algorithm>
-#include <random>
 
 namespace ppr {
 
-const Image *Reconstruction::FindImage(const std::string &name) const {
+const Reconstruction::Image *
+Reconstruction::FindImage(const std::string &name) const {
   for (const auto &[id, image] : images_) {
     if (image.Name() == name) {
       return &image;

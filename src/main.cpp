@@ -35,13 +35,13 @@ static char *GetLongShortOption(char **begin, char **end,
 static ppr::Mesh CreateMesh(const ppr::Reconstruction &reconstruction,
                             const std::string &image_name,
                             const ppr::Polygon2d &poly2d) {
-  const ppr::Image *image = reconstruction.FindImage(image_name);
+  const auto *image = reconstruction.FindImage(image_name);
   assert(image);
 
-  auto n = reconstruction.EstimatePlane(poly2d, *image);
+  const auto n = reconstruction.EstimatePlane(poly2d, *image);
   ppr::Polygon3d poly3d = reconstruction.ProjectPolygon(poly2d, *image, n);
 
-  auto triangles = poly2d.Triangulate();
+  const auto triangles = poly2d.Triangulate();
 
   const auto &camera = reconstruction.GetCamera(image->CamId());
   const auto &points = poly2d.Points();

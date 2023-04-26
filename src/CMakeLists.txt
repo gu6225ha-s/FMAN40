@@ -1,12 +1,9 @@
 set(SRC_FILES
-    camera.h
     colmap.cpp
     colmap.h
     geometry.h
-    image.h
     mesh.h
     mesh.cpp
-    point3d.h
     polygon.h
     reconstruction.cpp
     reconstruction.h

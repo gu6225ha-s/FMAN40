@@ -5,7 +5,7 @@
 
 namespace ppr {
 
-std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
+std::vector<Reconstruction::Camera> ReadCOLMAPCameras(const std::string &path) {
   // https://colmap.github.io/format.html#cameras-txt
   std::ifstream file(path);
   std::string str;
@@ -15,7 +15,7 @@ std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::vector<Camera> cameras;
+  std::vector<Reconstruction::Camera> cameras;
 
   while (std::getline(file, str)) {
     // #   CAMERA_ID, MODEL, WIDTH, HEIGHT, PARAMS[]
@@ -36,13 +36,13 @@ std::vector<Camera> ReadCOLMAPCameras(const std::string &path) {
     } else {
       throw std::runtime_error("Unsupported camera: " + comp[1]);
     }
-    cameras.push_back(Camera(id, width, height, f, c));
+    cameras.push_back(Reconstruction::Camera(id, width, height, f, c));
   }
 
   return cameras;
 }
 
-std::vector<Image> ReadCOLMAPImages(const std::string &path) {
+std::vector<Reconstruction::Image> ReadCOLMAPImages(const std::string &path) {
   // https://colmap.github.io/format.html#images-txt
   std::ifstream file(path);
   std::string str;
@@ -52,7 +52,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::vector<Image> images;
+  std::vector<Reconstruction::Image> images;
 
   while (std::getline(file, str)) {
     // #   IMAGE_ID, QW, QX, QY, QZ, TX, TY, TZ, CAMERA_ID, NAME
@@ -64,7 +64,7 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
         {std::stod(comp[5]), std::stod(comp[6]), std::stod(comp[7])});
     uint32_t cam_id = static_cast<uint32_t>(std::stoul(comp[8]));
     const std::string &name = comp[9];
-    Image image(id, q, t, cam_id, name);
+    Reconstruction::Image image(id, q, t, cam_id, name);
 
     // #   POINTS2D[] as (X, Y, POINT3D_ID)
     std::getline(file, str);
@@ -82,7 +82,8 @@ std::vector<Image> ReadCOLMAPImages(const std::string &path) {
   return images;
 }
 
-std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
+std::vector<Reconstruction::Point3d>
+ReadCOLMAPPoints3d(const std::string &path) {
   // https://colmap.github.io/format.html#points3d-txt
   std::ifstream file(path);
   std::string str;
@@ -92,7 +93,7 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
     std::getline(file, str);
   }
 
-  std::vector<Point3d> points;
+  std::vector<Reconstruction::Point3d> points;
 
   while (std::getline(file, str)) {
     // clang-format off
@@ -106,7 +107,7 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
                      static_cast<unsigned char>(std::stoul(comp[5])),
                      static_cast<unsigned char>(std::stoul(comp[6]))});
 
-    Point3d point(id, xyz, color);
+    Reconstruction::Point3d point(id, xyz, color);
 
     size_t offset = 8;
     for (int i = 0; i < (comp.size() - offset) / 2; i++) {
@@ -125,9 +126,12 @@ std::vector<Point3d> ReadCOLMAPPoints3d(const std::string &path) {
 
 Reconstruction ReadCOLMAPReconstruction(const std::string &dir) {
   std::filesystem::path base(dir);
-  std::vector<Camera> cameras = ReadCOLMAPCameras(base / "cameras.txt");
-  std::vector<Image> images = ReadCOLMAPImages(base / "images.txt");
-  std::vector<Point3d> points = ReadCOLMAPPoints3d(base / "points3D.txt");
+  std::vector<Reconstruction::Camera> cameras =
+      ReadCOLMAPCameras(base / "cameras.txt");
+  std::vector<Reconstruction::Image> images =
+      ReadCOLMAPImages(base / "images.txt");
+  std::vector<Reconstruction::Point3d> points =
+      ReadCOLMAPPoints3d(base / "points3D.txt");
   return Reconstruction(cameras, images, points);
 }
 
