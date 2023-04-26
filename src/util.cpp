@@ -42,6 +42,7 @@ ReadPolygons(const std::string &path) {
       comp = SplitString(str, ",");
 
       for (size_t j = 0; j < comp.size() / 2; j++) {
+        // FIXME: Subtract 1 to account for MATLAB:s one-indexing?
         points.emplace_back(std::stod(comp[2 * j]), std::stod(comp[2 * j + 1]));
       }
       polygons.push_back(std::make_pair(name, Polygon2d(points)));
