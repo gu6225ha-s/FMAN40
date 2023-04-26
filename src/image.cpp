@@ -6,13 +6,49 @@
 
 namespace ppr {
 
-float Image::Interp(float x, float y) {
-  assert(0 <= x && x < width_ - 1 && y <= 0 && y < height_ - 1);
+void Image::Resize(size_t width, size_t height) {
+  delete[] data_;
+  width_ = width;
+  height_ = height;
+  data_ = new unsigned char[width * height];
+}
+
+float Image::Interp(float x, float y) const {
+  assert(0 <= x && x < width_ - 1 && 0 <= y && y < height_ - 1);
   auto lerp = [](float a, float b, float t) { return a + t * (b - a); };
   int x0 = floor(x), y0 = floor(y);
   float v1 = lerp((*this)[y0][x0], (*this)[y0][x0 + 1], x - x0);
   float v2 = lerp((*this)[y0 + 1][x0], (*this)[y0 + 1][x0 + 1], x - x0);
   return lerp(v1, v2, y - y0);
+}
+
+void Image::Warp(const Image &im, const Eigen::Matrix3d &H,
+                 const Eigen::Vector2i &offset) const {
+  for (int y = 0; y < im.Height(); y++) {
+    for (int x = 0; x < im.Width(); x++) {
+      Eigen::Vector3d p(x + offset.x(), y + offset.y(), 1);
+      p = H * p;
+      p /= p.z();
+      if (p.x() < 0) {
+        p.x() = 0;
+      } else if (p.x() >= width_ - 1) {
+        p.x() = width_ - 1.001;
+      }
+      if (p.y() < 0) {
+        p.y() = 0;
+      } else if (p.y() >= height_ - 1) {
+        p.y() = height_ - 1.001;
+      }
+      im[y][x] = Interp(p.x(), p.y());
+    }
+  }
+}
+
+void RgbImage::Warp(const RgbImage &im, const Eigen::Matrix3d &H,
+                    const Eigen::Vector2i &offset) const {
+  R().Warp(im.R(), H, offset);
+  G().Warp(im.G(), H, offset);
+  B().Warp(im.B(), H, offset);
 }
 
 struct my_error_mgr {
