@@ -128,7 +128,10 @@ void WriteGltf(const std::vector<Mesh> &meshes,
                const std::filesystem::path &image_dir,
                const std::filesystem::path &gltf_path) {
   // Create output directory if it doesn't exist
-  std::filesystem::create_directories(gltf_path.parent_path());
+  const auto parent_path = gltf_path.parent_path();
+  if (!parent_path.empty()) {
+    std::filesystem::create_directories(gltf_path.parent_path());
+  }
 
   // Write buffer file
   std::filesystem::path bin_path(gltf_path);
