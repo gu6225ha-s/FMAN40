@@ -14,9 +14,11 @@ Install [Homebrew](https://brew.sh) then run
 brew install cmake eigen libjpeg
 ```
 
-### Windows
+### Ubuntu
 
-TODO
+```
+apt install cmake libeigen3-dev libjpeg-dev
+```
 
 ## Building
 
