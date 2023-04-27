@@ -18,7 +18,7 @@ public:
   size_t Height() const { return height_; }
   unsigned char *operator[](int y) const { return &data_[y * width_]; }
 
-  void Resize(size_t width, size_t height);
+  void Realloc(size_t width, size_t height);
   float Interp(float x, float y) const;
   void Warp(const Image &im, const Eigen::Matrix3d &H,
             const Eigen::Vector2i &offset) const;

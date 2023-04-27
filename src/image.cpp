@@ -6,7 +6,7 @@
 
 namespace ppr {
 
-void Image::Resize(size_t width, size_t height) {
+void Image::Realloc(size_t width, size_t height) {
   delete[] data_;
   width_ = width;
   height_ = height;
@@ -90,9 +90,9 @@ void RgbImage::ReadJpeg(const std::string &path) {
   JSAMPARRAY buffer = (*cinfo.mem->alloc_sarray)((j_common_ptr)&cinfo,
                                                  JPOOL_IMAGE, row_stride, 1);
 
-  r_.Resize(cinfo.output_width, cinfo.output_height);
-  g_.Resize(cinfo.output_width, cinfo.output_height);
-  b_.Resize(cinfo.output_width, cinfo.output_height);
+  r_.Realloc(cinfo.output_width, cinfo.output_height);
+  g_.Realloc(cinfo.output_width, cinfo.output_height);
+  b_.Realloc(cinfo.output_width, cinfo.output_height);
 
   while (cinfo.output_scanline < cinfo.output_height) {
     unsigned char *r = r_[cinfo.output_scanline],
