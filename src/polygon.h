@@ -17,6 +17,7 @@ public:
   bool PointInside(const Eigen::Vector2d &point) const;
   double Area() const;
   void Reverse();
+  T Centroid() const;
   std::vector<std::tuple<int, int, int>> Triangulate() const;
 
 private:
@@ -98,6 +99,16 @@ template <typename T> double Polygon<T>::Area() const {
 
 template <typename T> void Polygon<T>::Reverse() {
   std::reverse(points_.begin(), points_.end());
+}
+
+template <typename T> T Polygon<T>::Centroid() const {
+  T c;
+  c.setZero();
+  for (const auto &p : points_) {
+    c += p;
+  }
+  c /= points_.size();
+  return c;
 }
 
 template <typename T>
