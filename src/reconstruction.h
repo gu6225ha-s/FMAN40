@@ -109,6 +109,9 @@ public:
                                 const Image &image) const;
   Polygon3d ProjectPolygon(const Polygon2d &polygon2d, const Image &image,
                            const Eigen::Vector3d &plane) const;
+  Eigen::Matrix3d ComputeHomography(const Polygon2d &polygon,
+                                    const Image &image,
+                                    const Eigen::Vector3d &plane) const;
 
 private:
   std::map<uint32_t, Camera> cameras_;   // Cameras

@@ -82,4 +82,47 @@ Polygon3d Reconstruction::ProjectPolygon(const Polygon2d &polygon2d,
   return Polygon3d(points);
 }
 
+static Eigen::MatrixXd PlaneToWorldTrans(const Eigen::Vector3d &c,
+                                         const Eigen::Vector3d &x,
+                                         const Eigen::Vector3d &y) {
+
+  Eigen::MatrixXd T(4, 3);
+  // clang-format off
+  T << x.x(), y.x(), c.x(),
+       x.y(), y.y(), c.y(),
+       x.z(), y.z(), c.z(),
+           0,     0,     1;
+  // clang-format on
+  return T;
+}
+
+Eigen::Matrix3d
+Reconstruction::ComputeHomography(const Polygon2d &polygon, const Image &image,
+                                  const Eigen::Vector3d &plane) const {
+  // Get camera parameters
+  const auto R = image.Q().toRotationMatrix();
+  const auto &t = image.T();
+  const auto &K = GetCamera(image.CamId()).K();
+  const auto Kinv = K.inverse();
+  Eigen::MatrixXd Rt(3, 4);
+  Rt << R, t;
+
+  // Set up a coordinate system in the plane
+  const auto c = ProjectPoint(polygon.Centroid(), R, t, Kinv, plane);
+  Eigen::Vector3d z = -plane; // FIXME: Choose correct sign
+  Eigen::Vector3d x = Eigen::Vector3d(z.y(), -z.x(), 0).normalized();
+  Eigen::Vector3d y = z.cross(x).normalized();
+  const auto T = PlaneToWorldTrans(c, x, y);
+
+  // Compute the homography from plane to image
+  const auto H = K * Rt * T;
+
+  // Warp polygon to plane
+  const auto polygon_warped = H.inverse() * polygon;
+
+  // Adjust scale so that area remains constant
+  double s = sqrt(fabs(polygon.Area() / polygon_warped.Area()));
+  return K * Rt * PlaneToWorldTrans(c, x / s, y / s);
+}
+
 } // namespace ppr
