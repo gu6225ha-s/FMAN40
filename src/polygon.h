@@ -12,6 +12,9 @@ template <typename T> class Polygon {
 public:
   Polygon() {}
   Polygon(const std::vector<T> &points) : points_(points) {}
+  Polygon(std::vector<T> &&points) : points_(std::move(points)) {}
+
+  Polygon operator*(const Eigen::Matrix3d &H) const;
 
   const std::vector<T> &Points() const { return points_; }
   bool PointInside(const Eigen::Vector2d &point) const;
@@ -71,6 +74,26 @@ private:
     Vertex *prev, *next;
   } Vertex;
 };
+
+template <>
+inline Polygon<Eigen::Vector2d>
+Polygon<Eigen::Vector2d>::operator*(const Eigen::Matrix3d &H) const {
+  std::vector<Eigen::Vector2d> points;
+
+  points.reserve(Points().size());
+
+  for (const auto &p : Points()) {
+    const auto x = H * Eigen::Vector3d(p.x(), p.y(), 1);
+    points.emplace_back(x.x() / x.z(), x.y() / x.z());
+  }
+
+  return Polygon<Eigen::Vector2d>(std::move(points));
+}
+
+inline Polygon<Eigen::Vector2d>
+operator*(const Eigen::Matrix3d &H, const Polygon<Eigen::Vector2d> &polygon) {
+  return polygon * H;
+}
 
 template <typename T>
 bool Polygon<T>::PointInside(const Eigen::Vector2d &point) const {
