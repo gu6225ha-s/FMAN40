@@ -17,7 +17,7 @@ brew install cmake eigen libjpeg
 ### Ubuntu
 
 ```
-apt install cmake libeigen3-dev libjpeg-dev
+apt install build-essential cmake libeigen3-dev libjpeg-dev
 ```
 
 ## Building
