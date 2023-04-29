@@ -21,6 +21,7 @@ public:
   double Area() const;
   void Reverse();
   T Centroid() const;
+  void Bounds(T &min, T &max) const;
   std::vector<std::tuple<int, int, int>> Triangulate() const;
 
 private:
@@ -132,6 +133,14 @@ template <typename T> T Polygon<T>::Centroid() const {
   }
   c /= points_.size();
   return c;
+}
+
+template <typename T> void Polygon<T>::Bounds(T &min, T &max) const {
+  min = max = points_[0];
+  for (const auto &p : points_) {
+    min = min.cwiseMin(p);
+    max = max.cwiseMax(p);
+  }
 }
 
 template <typename T>
