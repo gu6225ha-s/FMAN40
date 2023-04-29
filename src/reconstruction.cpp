@@ -55,6 +55,17 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   return n.transpose() * R1 / (n.transpose() * t1 + 1);
 }
 
+static Eigen::Vector3d ProjectPoint(const Eigen::Vector2d &point,
+                                    const Eigen::Matrix3d &R,
+                                    const Eigen::Vector3d &t,
+                                    const Eigen::Matrix3d &Kinv,
+                                    const Eigen::Vector3d &plane) {
+  Eigen::Vector3d x(point.x(), point.y(), 1);
+  double lambda = (plane.transpose() * R.transpose() * t - 1) /
+                  (plane.transpose() * R.transpose() * Kinv * x);
+  return R.transpose() * (lambda * Kinv * x - t);
+}
+
 Polygon3d Reconstruction::ProjectPolygon(const Polygon2d &polygon2d,
                                          const Image &image,
                                          const Eigen::Vector3d &plane) const {
@@ -65,10 +76,7 @@ Polygon3d Reconstruction::ProjectPolygon(const Polygon2d &polygon2d,
   std::vector<Eigen::Vector3d> points;
 
   for (const auto &p : polygon2d.Points()) {
-    Eigen::Vector3d x(p.x(), p.y(), 1);
-    double lambda = (plane.transpose() * R.transpose() * t - 1) /
-                    (plane.transpose() * R.transpose() * Kinv * x);
-    points.push_back(R.transpose() * (lambda * Kinv * x - t));
+    points.push_back(ProjectPoint(p, R, t, Kinv, plane));
   }
 
   return Polygon3d(points);
