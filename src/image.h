@@ -13,10 +13,15 @@ public:
   Image(size_t width, size_t height) : width_(width), height_(height) {
     data_ = new unsigned char[width * height];
   }
+  Image(const Image &) = delete;
+  Image(Image &&other) { *this = std::move(other); }
   ~Image() { delete[] data_; }
+
+  Image &operator=(Image &&other);
+  unsigned char *operator[](int y) const { return &data_[y * width_]; }
+
   size_t Width() const { return width_; }
   size_t Height() const { return height_; }
-  unsigned char *operator[](int y) const { return &data_[y * width_]; }
 
   void Realloc(size_t width, size_t height);
   float Interp(float x, float y) const;
@@ -33,6 +38,15 @@ public:
   RgbImage() {}
   RgbImage(size_t width, size_t height)
       : r_(width, height), g_(width, height), b_(width, height) {}
+  RgbImage(const RgbImage &) = delete;
+  RgbImage(RgbImage &&other) { *this = std::move(other); }
+
+  RgbImage &operator=(RgbImage &&other) {
+    r_ = std::move(other.r_);
+    g_ = std::move(other.g_);
+    b_ = std::move(other.b_);
+    return *this;
+  }
 
   const Image &R() const { return r_; }
   const Image &G() const { return g_; }

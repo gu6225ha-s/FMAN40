@@ -6,6 +6,20 @@
 
 namespace ppr {
 
+Image &Image::operator=(Image &&other) {
+  if (this != &other) {
+    delete[] data_;
+    data_ = other.data_;
+    width_ = other.width_;
+    height_ = other.height_;
+
+    other.data_ = nullptr;
+    other.width_ = other.height_ = 0;
+  }
+
+  return *this;
+}
+
 void Image::Realloc(size_t width, size_t height) {
   delete[] data_;
   width_ = width;
