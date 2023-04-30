@@ -1,10 +1,12 @@
 #ifndef UTIL_H_
 #define UTIL_H_
 
+#include "image.h"
 #include "mesh.h"
 #include "polygon.h"
 #include <Eigen/Dense>
 #include <filesystem>
+#include <map>
 #include <string>
 #include <vector>
 
@@ -29,6 +31,17 @@ public:
 
 private:
   std::vector<Eigen::Vector3d> x_, y_, Rx_, t_;
+};
+
+class ImageCache {
+public:
+  ImageCache(const std::string &path) : path_(path) {}
+
+  const RgbImage &operator[](const std::string &name);
+
+private:
+  std::filesystem::path path_;             // Image directory
+  std::map<std::string, RgbImage> images_; // Images
 };
 
 } // namespace ppr

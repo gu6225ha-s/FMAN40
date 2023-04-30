@@ -327,4 +327,15 @@ Eigen::Vector3d PlaneEstimator::Solve() const {
   return x.head(3);
 }
 
+const RgbImage &ImageCache::operator[](const std::string &name) {
+  const auto fn = path_ / name;
+  auto it = images_.find(fn);
+  if (it == images_.end()) {
+    RgbImage image;
+    image.ReadJpeg(fn);
+    images_.emplace(fn, std::move(image));
+  }
+  return images_[fn];
+}
+
 } // namespace ppr
