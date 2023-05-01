@@ -6,7 +6,6 @@
 namespace ppr {
 
 std::vector<Reconstruction::Camera> ReadCOLMAPCameras(const std::string &path) {
-  // https://colmap.github.io/format.html#cameras-txt
   std::ifstream file(path);
   std::string str;
 
@@ -43,7 +42,6 @@ std::vector<Reconstruction::Camera> ReadCOLMAPCameras(const std::string &path) {
 }
 
 std::vector<Reconstruction::Image> ReadCOLMAPImages(const std::string &path) {
-  // https://colmap.github.io/format.html#images-txt
   std::ifstream file(path);
   std::string str;
 
@@ -84,7 +82,6 @@ std::vector<Reconstruction::Image> ReadCOLMAPImages(const std::string &path) {
 
 std::vector<Reconstruction::Point3d>
 ReadCOLMAPPoints3d(const std::string &path) {
-  // https://colmap.github.io/format.html#points3d-txt
   std::ifstream file(path);
   std::string str;
 
