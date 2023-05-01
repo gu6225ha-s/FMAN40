@@ -19,8 +19,7 @@ std::vector<std::pair<std::string, ppr::Polygon2d>>
 ReadPolygons(const std::string &path);
 
 void WriteGltf(const std::vector<Mesh> &meshes,
-               const std::filesystem::path &image_dir,
-               const std::filesystem::path &gltf_path);
+               const std::filesystem::path &path);
 
 class PlaneEstimator {
 public:

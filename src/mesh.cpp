@@ -2,7 +2,7 @@
 
 namespace ppr {
 
-void Mesh::CalcBbox(Eigen::Vector3d &min, Eigen::Vector3d &max) const {
+void Mesh::Bounds(Eigen::Vector3d &min, Eigen::Vector3d &max) const {
   assert(verts_.size() > 0);
   min = max = verts_[0];
   for (size_t i = 1; i < verts_.size(); i++) {

@@ -52,6 +52,9 @@ public:
   const Image &G() const { return g_; }
   const Image &B() const { return b_; }
 
+  size_t Width() const { return r_.Width(); }
+  size_t Height() const { return r_.Height(); }
+
   void Warp(const RgbImage &im, const Eigen::Matrix3d &H,
             const Eigen::Vector2i &offset) const;
 

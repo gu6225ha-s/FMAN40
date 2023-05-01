@@ -33,25 +33,44 @@ static char *GetLongShortOption(char **begin, char **end,
 }
 
 static ppr::Mesh CreateMesh(const ppr::Reconstruction &reconstruction,
-                            const std::string &image_name,
-                            const ppr::Polygon2d &poly2d) {
-  const auto *image = reconstruction.FindImage(image_name);
-  assert(image);
+                            const ppr::Reconstruction::Image &image,
+                            const ppr::Polygon2d &poly2d,
+                            const ppr::RgbImage &im) {
+  // Estimate plane from point correspondences
+  const auto n = reconstruction.EstimatePlane(poly2d, image);
 
-  const auto n = reconstruction.EstimatePlane(poly2d, *image);
-  ppr::Polygon3d poly3d = reconstruction.ProjectPolygon(poly2d, *image, n);
+  // Project 2D polygon onto the plane
+  ppr::Polygon3d poly3d = reconstruction.ProjectPolygon(poly2d, image, n);
 
+  // Triangulate the polygon
   const auto triangles = poly2d.Triangulate();
 
-  const auto &camera = reconstruction.GetCamera(image->CamId());
-  const auto &points = poly2d.Points();
+  // Compute a homography from the plane to the image
+  const auto H = reconstruction.ComputeHomography(poly2d, image, n);
+
+  // Warp the 2D polygon into the plane
+  const auto polyplane = H.inverse() * poly2d;
+
+  // Compute bounds for the warped texture image
+  Eigen::Vector2d mind, maxd;
+  polyplane.Bounds(mind, maxd);
+  const auto margin = 2.0;
+  Eigen::Vector2i mini(floor(mind.x() - margin), floor(mind.y() - margin));
+  Eigen::Vector2i maxi(ceil(maxd.x() + margin), ceil(maxd.y() + margin));
+
+  // Warp the original image into the plane
+  ppr::RgbImage implane(maxi.x() - mini.x(), maxi.y() - mini.y());
+  im.Warp(implane, H, mini);
+
+  // Compute texture coordinates
+  const auto &points = polyplane.Points();
   std::vector<Eigen::Vector2d> texcoords;
   for (size_t j = 0; j < points.size(); j++) {
-    texcoords.emplace_back((points[j].x() - 0.5) / camera.Width(),
-                           (points[j].y() - 0.5) / camera.Height());
+    texcoords.emplace_back((points[j].x() + 0.5 - mini.x()) / implane.Width(),
+                           (points[j].y() + 0.5 - mini.y()) / implane.Height());
   }
 
-  return ppr::Mesh(poly3d.Points(), triangles, texcoords, image_name);
+  return ppr::Mesh(poly3d.Points(), triangles, texcoords, std::move(implane));
 }
 
 int main(int argc, char *argv[]) {
@@ -107,20 +126,25 @@ int main(int argc, char *argv[]) {
   }
 
   std::cout << "Creating piecewise planar reconstruction" << std::endl;
+  ppr::ImageCache imcache(images);
   std::vector<ppr::Mesh> meshes;
+
   for (size_t i = 0; i < polys2d.size(); i++) {
     const std::string &image_name = polys2d[i].first;
     ppr::Polygon2d &poly2d = polys2d[i].second;
+    const auto *image = reconstruction.FindImage(image_name);
+    assert(image);
     std::cout << "Processing polygon " << i + 1 << "/" << polys2d.size()
               << " (image: " << image_name << ")" << std::endl;
     if (poly2d.Area() > 0) {
       poly2d.Reverse();
     }
-    ppr::Mesh mesh = CreateMesh(reconstruction, image_name, poly2d);
-    meshes.push_back(mesh);
+    ppr::Mesh mesh =
+        CreateMesh(reconstruction, *image, poly2d, imcache[image_name]);
+    meshes.push_back(std::move(mesh));
   }
 
-  WriteGltf(meshes, images, output);
+  WriteGltf(meshes, output);
   std::cout << "Wrote " << output << std::endl;
 
   return 0;

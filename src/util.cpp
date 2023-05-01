@@ -42,8 +42,9 @@ ReadPolygons(const std::string &path) {
       comp = SplitString(str, ",");
 
       for (size_t j = 0; j < comp.size() / 2; j++) {
-        // FIXME: Subtract 1 to account for MATLAB:s one-indexing?
-        points.emplace_back(std::stod(comp[2 * j]), std::stod(comp[2 * j + 1]));
+        // Subtract 1 to account for MATLAB:s one-indexing
+        points.emplace_back(std::stod(comp[2 * j]) - 1,
+                            std::stod(comp[2 * j + 1]) - 1);
       }
       polygons.push_back(std::make_pair(name, Polygon2d(points)));
     }
@@ -112,40 +113,31 @@ static void WriteGltfBuffer(const std::vector<Mesh> &meshes,
   delete[] data;
 }
 
-static void CopyImages(const std::vector<Mesh> &meshes,
-                       const std::filesystem::path &src_dir,
-                       const std::filesystem::path &dst_dir) {
-  for (const auto &mesh : meshes) {
-    std::filesystem::path src_path(src_dir / mesh.ImageName());
-    std::filesystem::path dst_path(dst_dir / mesh.ImageName());
-    if (!std::filesystem::exists(dst_path)) {
-      std::filesystem::copy_file(src_path, dst_path);
-    }
-  }
-}
-
 void WriteGltf(const std::vector<Mesh> &meshes,
-               const std::filesystem::path &image_dir,
-               const std::filesystem::path &gltf_path) {
+               const std::filesystem::path &path) {
   // Create output directory if it doesn't exist
-  const auto parent_path = gltf_path.parent_path();
+  const auto parent_path = path.parent_path();
   if (!parent_path.empty()) {
-    std::filesystem::create_directories(gltf_path.parent_path());
+    std::filesystem::create_directories(path.parent_path());
   }
 
   // Write buffer file
-  std::filesystem::path bin_path(gltf_path);
+  std::filesystem::path bin_path(path);
   bin_path.replace_extension(".bin");
   std::vector<size_t> vert_size, tc_size, tri_size;
   WriteGltfBuffer(meshes, bin_path, vert_size, tc_size, tri_size);
 
-  // Copy images
-  CopyImages(meshes, image_dir, gltf_path.parent_path());
+  // Write images
+  auto filename = [](const std::filesystem::path &path, size_t i) {
+    return path.stem().string() + "_im" + std::to_string(i) + ".jpeg";
+  };
+  for (size_t i = 0; i < meshes.size(); i++) {
+    meshes[i].Image().WriteJpeg(path.parent_path() / filename(path, i), 90);
+  }
 
   // Write glTF file
   int precision = std::numeric_limits<float>::digits10 + 1;
-  std::vector<std::string> images;
-  std::ofstream file(gltf_path);
+  std::ofstream file(path);
   file << std::scientific << std::setprecision(precision);
   file << "{\n";
   file << "  \"asset\": {\n";
@@ -180,7 +172,7 @@ void WriteGltf(const std::vector<Mesh> &meshes,
   file << "  \"accessors\": [\n";
   for (size_t i = 0; i < meshes.size(); i++) {
     Eigen::Vector3d min, max;
-    meshes[i].CalcBbox(min, max);
+    meshes[i].Bounds(min, max);
     file << "    {\n";
     file << "      \"bufferView\": " << 3 * i << ",\n";
     file << "      \"componentType\": " << GLTF_FLOAT << ",\n";
@@ -217,19 +209,10 @@ void WriteGltf(const std::vector<Mesh> &meshes,
   file << "  ],\n";
   file << "  \"materials\": [\n";
   for (size_t i = 0; i < meshes.size(); i++) {
-    size_t j;
-    for (j = 0; j < images.size(); j++) {
-      if (images[j] == meshes[i].ImageName()) {
-        break;
-      }
-    }
-    if (j == images.size()) {
-      images.push_back(meshes[i].ImageName());
-    }
     file << "    {\n";
     file << "      \"pbrMetallicRoughness\": {\n";
     file << "        \"baseColorTexture\": {\n";
-    file << "          \"index\": " << j << "\n";
+    file << "          \"index\": " << i << "\n";
     file << "        },\n";
     file << "        \"metallicFactor\": 0.0\n";
     file << "      }\n";
@@ -241,22 +224,22 @@ void WriteGltf(const std::vector<Mesh> &meshes,
   }
   file << "  ],\n";
   file << "  \"textures\": [\n";
-  for (size_t i = 0; i < images.size(); i++) {
+  for (size_t i = 0; i < meshes.size(); i++) {
     file << "    {\n";
     file << "      \"source\": " << i << "\n";
     file << "    }";
-    if (i < images.size() - 1) {
+    if (i < meshes.size() - 1) {
       file << ",";
     }
     file << "\n";
   }
   file << "  ],\n";
   file << "  \"images\": [\n";
-  for (size_t i = 0; i < images.size(); i++) {
+  for (size_t i = 0; i < meshes.size(); i++) {
     file << "    {\n";
-    file << "      \"uri\": \"" << images[i] << "\"\n";
+    file << "      \"uri\": \"" << filename(path, i) << "\"\n";
     file << "    }";
-    if (i < images.size() - 1) {
+    if (i < meshes.size() - 1) {
       file << ",";
     }
     file << "\n";
