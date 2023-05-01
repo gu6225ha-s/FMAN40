@@ -25,3 +25,10 @@ add_custom_target(fmt
                   COMMAND clang-format
                   -i ${SRC_FILES} main.cpp
                   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR})
+
+find_package(Doxygen)
+if (DOXYGEN_FOUND)
+  add_custom_target(doc
+                    COMMAND echo "INPUT=${CMAKE_CURRENT_SOURCE_DIR}" | ${DOXYGEN_EXECUTABLE} -
+                    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR})
+endif (DOXYGEN_FOUND)

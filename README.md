@@ -54,6 +54,16 @@ make fmt
 
 to format all source files with [ClangFormat](https://clang.llvm.org/docs/ClangFormat.html).
 
+### Documentation
+
+Use
+
+```
+make doc
+```
+
+to generate documentation with [doxygen](https://www.doxygen.nl). It is saved to the current build directory.
+
 ### Sparse reconstruction with COLMAP
 
 scripts/colmap.sh is a script for creating a sparse reconstruction with COLMAP. Usage:
