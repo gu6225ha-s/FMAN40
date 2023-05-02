@@ -55,11 +55,23 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   return n.transpose() * R1 / (n.transpose() * t1 + 1);
 }
 
+// Project an image point onto a 3d plane
 static Eigen::Vector3d ProjectPoint(const Eigen::Vector2d &point,
                                     const Eigen::Matrix3d &R,
                                     const Eigen::Vector3d &t,
                                     const Eigen::Matrix3d &Kinv,
                                     const Eigen::Vector3d &plane) {
+  // Camera equations:
+  // λx = K(RX + t)  [1]
+  //
+  // Plane equation:
+  // nᵗX + 1 = 0  [2]
+  //
+  // Solving [1] for X gives
+  // X = Rᵗ(λK⁻¹x - t)  [3]
+  //
+  // Find λ by inserting [3] into [2]
+  // λ = (nᵗRᵗt - 1)/(nᵗRᵗK⁻¹x)  [4]
   Eigen::Vector3d x(point.x(), point.y(), 1);
   double lambda = (plane.transpose() * R.transpose() * t - 1) /
                   (plane.transpose() * R.transpose() * Kinv * x);
@@ -82,6 +94,8 @@ Polygon3d Reconstruction::ProjectPolygon(const Polygon2d &polygon2d,
   return Polygon3d(points);
 }
 
+// Compute transformation from the 2d coordinate system in the plane to the
+// global coordinate system
 static Eigen::MatrixXd PlaneToWorldTrans(const Eigen::Vector3d &c,
                                          const Eigen::Vector3d &x,
                                          const Eigen::Vector3d &y) {
@@ -97,7 +111,8 @@ static Eigen::MatrixXd PlaneToWorldTrans(const Eigen::Vector3d &c,
 }
 
 Eigen::Matrix3d
-Reconstruction::ComputeHomography(const Polygon2d &polygon2d, const Image &image,
+Reconstruction::ComputeHomography(const Polygon2d &polygon2d,
+                                  const Image &image,
                                   const Eigen::Vector3d &plane) const {
   // Get camera parameters
   const auto R = image.Q().toRotationMatrix();
@@ -108,8 +123,12 @@ Reconstruction::ComputeHomography(const Polygon2d &polygon2d, const Image &image
   Rt << R, t;
 
   // Set up a coordinate system in the plane
+  // The origin is the centroid of the 2d polygon projected onto the 3d plane
   const auto c = ProjectPoint(polygon2d.Centroid(), R, t, Kinv, plane);
+  // The z axis is parallel to the plane normal, pointing away from the image
   Eigen::Vector3d z = -plane; // FIXME: Choose correct sign
+  // The x and y axes are chosen arbitrarily but orthogonal to z
+  assert(z.x() != 0 || z.y() != 0);
   Eigen::Vector3d x = Eigen::Vector3d(z.y(), -z.x(), 0).normalized();
   Eigen::Vector3d y = z.cross(x).normalized();
   const auto T = PlaneToWorldTrans(c, x, y);
