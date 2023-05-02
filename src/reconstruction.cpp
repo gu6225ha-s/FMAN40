@@ -97,7 +97,7 @@ static Eigen::MatrixXd PlaneToWorldTrans(const Eigen::Vector3d &c,
 }
 
 Eigen::Matrix3d
-Reconstruction::ComputeHomography(const Polygon2d &polygon, const Image &image,
+Reconstruction::ComputeHomography(const Polygon2d &polygon2d, const Image &image,
                                   const Eigen::Vector3d &plane) const {
   // Get camera parameters
   const auto R = image.Q().toRotationMatrix();
@@ -108,7 +108,7 @@ Reconstruction::ComputeHomography(const Polygon2d &polygon, const Image &image,
   Rt << R, t;
 
   // Set up a coordinate system in the plane
-  const auto c = ProjectPoint(polygon.Centroid(), R, t, Kinv, plane);
+  const auto c = ProjectPoint(polygon2d.Centroid(), R, t, Kinv, plane);
   Eigen::Vector3d z = -plane; // FIXME: Choose correct sign
   Eigen::Vector3d x = Eigen::Vector3d(z.y(), -z.x(), 0).normalized();
   Eigen::Vector3d y = z.cross(x).normalized();
@@ -118,10 +118,10 @@ Reconstruction::ComputeHomography(const Polygon2d &polygon, const Image &image,
   const auto H = K * Rt * T;
 
   // Warp polygon to plane
-  const auto polygon_warped = H.inverse() * polygon;
+  const auto polygon_warped = H.inverse() * polygon2d;
 
   // Adjust scale so that area remains constant
-  double s = sqrt(fabs(polygon.Area() / polygon_warped.Area()));
+  double s = sqrt(fabs(polygon2d.Area() / polygon_warped.Area()));
   return K * Rt * PlaneToWorldTrans(c, x / s, y / s);
 }
 

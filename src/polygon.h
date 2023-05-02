@@ -8,20 +8,63 @@
 
 namespace ppr {
 
+/// \brief Template polygon class.
+///
+/// A valid polygon should have at least three points.
 template <typename T> class Polygon {
 public:
+  /// \brief Create new, empty polygon.
   Polygon() {}
+
+  /// \brief Create new polygon from vector of points.
+  /// \param points vector of points
   Polygon(const std::vector<T> &points) : points_(points) {}
+
+  /// \brief Move constructor.
+  ///
+  /// The new polygon takes ownership of the vector of \p points.
+  /// \param points vector of points
   Polygon(std::vector<T> &&points) : points_(std::move(points)) {}
 
+  /// \brief Multiplication operator.
+  /// \param H a homography / projective transformation
+  /// \return A new polygon with \p H applied to each point.
   Polygon operator*(const Eigen::Matrix3d &H) const;
 
+  /// \brief Get the points of the polygon.
+  /// \return The vector of points.
   const std::vector<T> &Points() const { return points_; }
+
+  /// \brief Check if a point is inside the polygon.
+  ///
+  /// The check is done in the xy plane.
+  /// \param point query point
+  /// \return True if the point is inside the polygon and false otherwise.
   bool PointInside(const Eigen::Vector2d &point) const;
+
+  /// \brief Compute the signed area of the polygon.
+  ///
+  /// The area is computed in the xy plane.
+  /// \return The signed area of the polygon.
   double Area() const;
+
+  /// \brief Reverse the polygon.
   void Reverse();
+
+  /// \brief Compute the centroid of the polygon.
+  /// \return The centroid of the polygon.
   T Centroid() const;
+
+  /// \brief Compute the bounds of the polygon.
+  /// \param[out] min the minimum coordinates in xyz
+  /// \param[out] max the maximum coordinates in xyz
   void Bounds(T &min, T &max) const;
+
+  /// \brief Triangulate the polygon.
+  ///
+  /// The triangulation is done using a naive ear clipping algorithm. It assumes
+  /// that the polygon is simple (no self-intersections, no holes).
+  /// \return A vector of triangles.
   std::vector<std::tuple<int, int, int>> Triangulate() const;
 
 private:
