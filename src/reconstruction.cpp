@@ -34,7 +34,7 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   for (size_t i = 0; i < points.size(); i++) {
     const Eigen::Vector2d &x1 = points[i];
 
-    if (p3d_ids[i] == -1) {
+    if (p3d_ids[i] == (uint64_t)-1) {
       continue;
     }
 

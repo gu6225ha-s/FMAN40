@@ -67,7 +67,7 @@ std::vector<Reconstruction::Image> ReadCOLMAPImages(const std::string &path) {
     // #   POINTS2D[] as (X, Y, POINT3D_ID)
     std::getline(file, str);
     comp = SplitString(str, " ");
-    for (int i = 0; i < comp.size() / 3; i++) {
+    for (size_t i = 0; i < comp.size() / 3; i++) {
       Eigen::Vector2d point(
           {std::stod(comp[3 * i]), std::stod(comp[3 * i + 1])});
       uint64_t p3d_id = static_cast<uint64_t>(std::stoull(comp[3 * i + 2]));
@@ -107,7 +107,9 @@ ReadCOLMAPPoints3d(const std::string &path) {
     Reconstruction::Point3d point(id, xyz, color);
 
     size_t offset = 8;
-    for (int i = 0; i < (comp.size() - offset) / 2; i++) {
+    assert(comp.size() >= offset);
+    assert((comp.size() - offset) % 2 == 0);
+    for (size_t i = 0; i < (comp.size() - offset) / 2; i++) {
       uint32_t image_id =
           static_cast<uint32_t>(std::stoul(comp[offset + 2 * i]));
       uint32_t p2d_idx =

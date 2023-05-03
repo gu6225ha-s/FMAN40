@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(PiecewisePlanarReconstruction)
 set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wsign-compare")
 find_package(Eigen3 3.3 REQUIRED NO_MODULE)
 find_package(JPEG REQUIRED)
 add_subdirectory(src)

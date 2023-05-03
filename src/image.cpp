@@ -38,8 +38,8 @@ float Image::Interp(float x, float y) const {
 
 void Image::Warp(const Image &im, const Eigen::Matrix3d &H,
                  const Eigen::Vector2i &offset) const {
-  for (int y = 0; y < im.Height(); y++) {
-    for (int x = 0; x < im.Width(); x++) {
+  for (int y = 0; y < (int)im.Height(); y++) {
+    for (int x = 0; x < (int)im.Width(); x++) {
       Eigen::Vector3d p(x + offset.x(), y + offset.y(), 1);
       p = H * p;
       p /= p.z();
@@ -113,7 +113,7 @@ void RgbImage::ReadJpeg(const std::string &path) {
                   *g = g_[cinfo.output_scanline],
                   *b = b_[cinfo.output_scanline];
     jpeg_read_scanlines(&cinfo, buffer, 1);
-    for (int i = 0; i < cinfo.output_width; i++) {
+    for (JDIMENSION i = 0; i < cinfo.output_width; i++) {
       r[i] = (*buffer)[3 * i + 0];
       g[i] = (*buffer)[3 * i + 1];
       b[i] = (*buffer)[3 * i + 2];
@@ -162,7 +162,7 @@ void RgbImage::WriteJpeg(const std::string &path, int quality) const {
   while (cinfo.next_scanline < cinfo.image_height) {
     unsigned char *r = r_[cinfo.next_scanline], *g = g_[cinfo.next_scanline],
                   *b = b_[cinfo.next_scanline];
-    for (int i = 0; i < cinfo.image_width; i++) {
+    for (JDIMENSION i = 0; i < cinfo.image_width; i++) {
       (*buffer)[3 * i + 0] = r[i];
       (*buffer)[3 * i + 1] = g[i];
       (*buffer)[3 * i + 2] = b[i];
