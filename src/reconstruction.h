@@ -232,6 +232,14 @@ public:
                                     const Image &image,
                                     const Eigen::Vector3d &plane) const;
 
+  /// \brief Get modified camera matrix and 2d point.
+  /// \param image image in which the 2d polygon is defined
+  /// \param item item contains the information of current 3d point
+  /// \return the modified rotation matrix R, transfer vector t, and 2d point
+  std::tuple<Eigen::Matrix3d, Eigen::Vector3d, Eigen::Vector2d>
+  ProcessInfor(const Image &image, const auto &item,
+               Eigen::Matrix4d H_camera) const;
+
 private:
   std::map<uint32_t, Camera> cameras_;   // Cameras
   std::map<uint32_t, Image> images_;     // Images

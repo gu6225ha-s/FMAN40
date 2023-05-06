@@ -15,6 +15,7 @@ Reconstruction::FindImage(const std::string &name) const {
   return nullptr;
 }
 
+/// Estimate plane by using robust estimation method RANSAC
 Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
                                               const Image &image) const {
 
@@ -25,7 +26,10 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   const Eigen::Matrix3d &K = GetCamera(image.CamId()).K();
   const Eigen::Matrix3d Kinv = K.inverse();
   std::vector<int> point_index;
+  int max_n_inliners = 0;
+  Eigen::Vector3d best_norm;
   Eigen::Matrix4d H_camera;
+  int n_inliers = 0;
   H_camera.block(0, 0, 3, 3) = R1.transpose();
   H_camera.block(3, 0, 1, 3).setConstant(0);
   H_camera.block(0, 3, 3, 1) = -R1.transpose() * t1;
@@ -42,69 +46,77 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
       point_index.push_back(i);
     }
   }
-  int max_n_inliners = 0;
-  Eigen::Vector3d best_norm;
+  /// Run RANSAC for 1000 iterations
   for (size_t i = 0; i < 1000; i++) {
     std::vector<int> sampled_index;
     PlaneEstimator plane_estimator;
-
+    /// Randomly select minmum set of points to do the plane estimation
     std::sample(point_index.begin(), point_index.end(),
                 std::back_inserter(sampled_index), 3,
                 std::mt19937{std::random_device{}()});
-
+    /// Get corresponding points first
     for (size_t j = 0; j < sampled_index.size(); j++) {
       const Eigen::Vector2d &x1 = points[sampled_index[j]];
       for (const auto &item : GetPoint3d(p3d_ids[sampled_index[j]]).Track()) {
         if (item.first == image.Id()) {
           continue;
         }
-        const Image &image2 = GetImage(item.first);
-        assert(image2.CamId() == image.CamId());
-        Eigen::MatrixXd Rt2(3, 4);
-        Rt2 << image2.Q().toRotationMatrix(), image2.T();
-        Rt2 = Rt2 * H_camera;
-        const Eigen::Matrix3d R2 = Rt2.block(0, 0, 3, 3);
-        const Eigen::Vector3d &t2 = Rt2.block(0, 3, 3, 1);
-        const Eigen::Vector2d &x2 = image2.Points()[item.second];
+        Eigen::Matrix3d R2;
+        Eigen::Vector3d t2;
+        Eigen::Vector2d x2;
+        std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
         plane_estimator.AddCorrespondence(
             Kinv * Eigen::Vector3d(x1.x(), x1.y(), 1),
             Kinv * Eigen::Vector3d(x2.x(), x2.y(), 1), R2, t2);
       }
     }
+    /// Solve for the plane norm
     Eigen::Vector3d n = plane_estimator.Solve();
-    int n_inliers = 0;
+    /// Compute the homography and project the points to compara the differece
     for (size_t k = 0; k < point_index.size(); k++) {
       const Eigen::Vector2d &x1 = points[point_index[k]];
-
       for (const auto &item : GetPoint3d(p3d_ids[point_index[k]]).Track()) {
         if (item.first == image.Id()) {
           continue;
         }
-
-        const Image &image2 = GetImage(item.first);
-        assert(image2.CamId() == image.CamId());
-        Eigen::MatrixXd Rt2(3, 4);
-        Rt2 << image2.Q().toRotationMatrix(), image2.T();
-        Rt2 = Rt2 * H_camera;
-        const Eigen::Matrix3d R2 = Rt2.block(0, 0, 3, 3);
-        const Eigen::Vector3d &t2 = Rt2.block(0, 3, 3, 1);
-        const Eigen::Vector2d &x2 = image2.Points()[item.second];
+        Eigen::Matrix3d R2;
+        Eigen::Vector3d t2;
+        Eigen::Vector2d x2;
+        std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
         Eigen::Matrix3d H_points = K * (R2 - t2 * n.transpose()) * Kinv;
         Eigen::Vector3d x2_tf = H_points * Eigen::Vector3d(x1.x(), x1.y(), 1);
         x2_tf = x2_tf / x2_tf.z();
+        /// Consider points with error smaller than 5 pixel as inliers
         if ((Eigen::Vector2d(x2_tf.x(), x2_tf.y()) - x2).norm() < 5)
           n_inliers++;
       }
     }
+    /// Keep tracking the best norm
     if (n_inliers > max_n_inliners) {
       max_n_inliners = n_inliers;
       best_norm = n;
     }
   }
-  Eigen::Vector4d norm_temp = Eigen::Vector4d(best_norm.x(), best_norm.y(), best_norm.z(),1).transpose() * H_camera.inverse();
-  ///std::cout << "the resulting norm" << norm_temp.head<3>() / norm_temp.w() << std::endl;
-  ///exit(0);
+  Eigen::Vector4d norm_temp =
+      Eigen::Vector4d(best_norm.x(), best_norm.y(), best_norm.z(), 1)
+          .transpose() *
+      H_camera.inverse();
+  /// Return the best norm
   return norm_temp.head<3>() / norm_temp.w();
+}
+
+std::tuple<Eigen::Matrix3d, Eigen::Vector3d, Eigen::Vector2d>
+Reconstruction::ProcessInfor(const Image &image, const auto &item,
+                             Eigen::Matrix4d H_camera) const {
+  const Reconstruction::Image &image2 = GetImage(item.first);
+  assert(image2.CamId() == image.CamId());
+  Eigen::MatrixXd Rt2(3, 4);
+  Rt2 << image2.Q().toRotationMatrix(), image2.T();
+  Rt2 = Rt2 * H_camera;
+  const Eigen::Matrix3d R2 = Rt2.block(0, 0, 3, 3);
+  const Eigen::Vector3d &t2 = Rt2.block(0, 3, 3, 1);
+  const Eigen::Vector2d &x2 = image2.Points()[item.second];
+  return {R2, t2, x2};
 }
 
 // Project an image point onto a 3d plane
