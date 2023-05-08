@@ -127,8 +127,7 @@ Polygon<Eigen::Vector2d>::operator*(const Eigen::Matrix3d &H) const {
   points.reserve(Points().size());
 
   for (const auto &p : Points()) {
-    Eigen::Vector3d x = H * Eigen::Vector3d(p.x(), p.y(), 1);
-    points.emplace_back(x.x() / x.z(), x.y() / x.z());
+    points.push_back((H * p.homogeneous()).hnormalized());
   }
 
   return Polygon<Eigen::Vector2d>(std::move(points));

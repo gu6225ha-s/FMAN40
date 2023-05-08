@@ -51,7 +51,8 @@ public:
 
   /// \brief Solve for the plane normal.
   ///
-  /// At least three correspondences should first be added using PlaneEstimator#AddCorrespondence.
+  /// At least three correspondences should first be added using
+  /// PlaneEstimator#AddCorrespondence.
   /// \return The plane normal vector.
   Eigen::Vector3d Solve() const;
 

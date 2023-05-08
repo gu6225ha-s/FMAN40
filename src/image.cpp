@@ -40,9 +40,8 @@ void Image::Warp(const Image &im, const Eigen::Matrix3d &H,
                  const Eigen::Vector2i &offset) const {
   for (int y = 0; y < (int)im.Height(); y++) {
     for (int x = 0; x < (int)im.Width(); x++) {
-      Eigen::Vector3d p(x + offset.x(), y + offset.y(), 1);
-      p = H * p;
-      p /= p.z();
+      Eigen::Vector2d p(x + offset.x(), y + offset.y());
+      p = (H * p.homogeneous()).hnormalized();
       if (p.x() < 0) {
         p.x() = 0;
       } else if (p.x() >= width_ - 1) {

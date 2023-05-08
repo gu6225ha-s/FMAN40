@@ -65,9 +65,8 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
         Eigen::Vector3d t2;
         Eigen::Vector2d x2;
         std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
-        plane_estimator.AddCorrespondence(
-            Kinv * Eigen::Vector3d(x1.x(), x1.y(), 1),
-            Kinv * Eigen::Vector3d(x2.x(), x2.y(), 1), R2, t2);
+        plane_estimator.AddCorrespondence(Kinv * x1.homogeneous(),
+                                          Kinv * x2.homogeneous(), R2, t2);
       }
     }
     /// Solve for the plane norm
@@ -84,10 +83,9 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
         Eigen::Vector2d x2;
         std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
         Eigen::Matrix3d H_points = K * (R2 - t2 * n.transpose()) * Kinv;
-        Eigen::Vector3d x2_tf = H_points * Eigen::Vector3d(x1.x(), x1.y(), 1);
-        x2_tf = x2_tf / x2_tf.z();
+        Eigen::Vector3d x2_tf = H_points * x1.homogeneous();
         /// Consider points with error smaller than 5 pixel as inliers
-        if ((Eigen::Vector2d(x2_tf.x(), x2_tf.y()) - x2).norm() < 5)
+        if ((x2_tf.hnormalized() - x2).norm() < 5)
           n_inliers++;
       }
     }
@@ -97,12 +95,9 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
       best_norm = n;
     }
   }
-  Eigen::Vector4d norm_temp =
-      Eigen::Vector4d(best_norm.x(), best_norm.y(), best_norm.z(), 1)
-          .transpose() *
-      H_camera.inverse();
   /// Return the best norm
-  return norm_temp.head<3>() / norm_temp.w();
+  return (best_norm.homogeneous().transpose() * H_camera.inverse())
+      .hnormalized();
 }
 
 std::tuple<Eigen::Matrix3d, Eigen::Vector3d, Eigen::Vector2d>
@@ -137,7 +132,7 @@ static Eigen::Vector3d ProjectPoint(const Eigen::Vector2d &point,
   //
   // Find λ by inserting [3] into [2]
   // λ = (nᵗRᵗt - 1)/(nᵗRᵗK⁻¹x)  [4]
-  Eigen::Vector3d x(point.x(), point.y(), 1);
+  Eigen::Vector3d x = point.homogeneous();
   double lambda = (plane.transpose() * R.transpose() * t - 1) /
                   (plane.transpose() * R.transpose() * Kinv * x);
   return R.transpose() * (lambda * Kinv * x - t);
