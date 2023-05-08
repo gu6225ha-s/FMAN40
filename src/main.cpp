@@ -35,9 +35,9 @@ static char *GetLongShortOption(char **begin, char **end,
 static ppr::Mesh CreateMesh(const ppr::Reconstruction &reconstruction,
                             const ppr::Reconstruction::Image &image,
                             const ppr::Polygon2d &poly2d,
-                            const ppr::RgbImage &im) {
+                            const ppr::RgbImage &im, size_t niter, double thr) {
   // Estimate plane from point correspondences
-  const auto n = reconstruction.EstimatePlane(poly2d, image);
+  const auto n = reconstruction.EstimatePlane(poly2d, image, niter, thr);
 
   // Project 2D polygon onto the plane
   ppr::Polygon3d poly3d = reconstruction.ProjectPolygon(poly2d, image, n);
@@ -74,19 +74,24 @@ static ppr::Mesh CreateMesh(const ppr::Reconstruction &reconstruction,
 }
 
 int main(int argc, char *argv[]) {
+  size_t ransac_niter = 100;
+  double ransac_thr = 5.0;
 
   if (HasLongShortOption(argv, argv + argc, "--help", "-h")) {
     std::cout << "Piecewise Planar Reconstructions from Multiple Homographies"
               << std::endl
               << "Usage:" << std::endl
-              << " ppr [-h] -sp SPARSE -poly POLYGONS -im IMAGES -out OUTPUT"
+              << " ppr [-h] -sp SPARSE -poly POLYGONS -im IMAGES -out OUTPUT "
+                 "[-it ITERATIONS] [-thr THRESHOLD]"
               << std::endl
               << "Options:" << std::endl
               << " -h, --help        Show help message" << std::endl
               << " -sp, --sparse     Path to COLMAP reconstruction" << std::endl
               << " -poly, --polygons Path to polygon file" << std::endl
               << " -im, --images     Path to image directory" << std::endl
-              << " -out, --output    Path to output glTF file" << std::endl;
+              << " -out, --output    Path to output glTF file" << std::endl
+              << " -it, --iterations Number of RANSAC iterations" << std::endl
+              << " -thr, --threshold RANSAC inlier threshold" << std::endl;
     return 0;
   }
 
@@ -125,7 +130,21 @@ int main(int argc, char *argv[]) {
     return -1;
   }
 
-  std::cout << "Creating piecewise planar reconstruction" << std::endl;
+  char *iterations =
+      GetLongShortOption(argv, argv + argc, "--iterations", "-it");
+  if (iterations) {
+    ransac_niter = static_cast<size_t>(std::stoull(iterations));
+  }
+
+  char *threshold =
+      GetLongShortOption(argv, argv + argc, "--threshold", "-thr");
+  if (threshold) {
+    ransac_thr = std::stod(threshold);
+  }
+
+  std::cout << "Creating piecewise planar reconstruction (iterations: "
+            << ransac_niter << ", threshold: " << ransac_thr << ")"
+            << std::endl;
   ppr::ImageCache imcache(images);
   std::vector<ppr::Mesh> meshes;
 
@@ -139,8 +158,8 @@ int main(int argc, char *argv[]) {
     if (poly2d.Area() > 0) {
       poly2d.Reverse();
     }
-    ppr::Mesh mesh =
-        CreateMesh(reconstruction, *image, poly2d, imcache[image_name]);
+    ppr::Mesh mesh = CreateMesh(reconstruction, *image, poly2d,
+                                imcache[image_name], ransac_niter, ransac_thr);
     meshes.push_back(std::move(mesh));
   }
 

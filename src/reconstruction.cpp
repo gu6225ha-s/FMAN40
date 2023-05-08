@@ -17,7 +17,8 @@ Reconstruction::FindImage(const std::string &name) const {
 
 /// Estimate plane by using robust estimation method RANSAC
 Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
-                                              const Image &image) const {
+                                              const Image &image, size_t niter,
+                                              double thr) const {
 
   const std::vector<Eigen::Vector2d> &points = image.Points();
   const std::vector<uint64_t> &p3d_ids = image.P3dIds();
@@ -45,8 +46,8 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
       point_index.push_back(i);
     }
   }
-  /// Run RANSAC for 1000 iterations
-  for (size_t i = 0; i < 1000; i++) {
+  /// Run RANSAC iterations
+  for (size_t i = 0; i < niter; i++) {
     std::vector<int> sampled_index;
     int n_inliers = 0;
     PlaneEstimator plane_estimator;
@@ -84,8 +85,8 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
         std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
         Eigen::Matrix3d H_points = K * (R2 - t2 * n.transpose()) * Kinv;
         Eigen::Vector3d x2_tf = H_points * x1.homogeneous();
-        /// Consider points with error smaller than 5 pixel as inliers
-        if ((x2_tf.hnormalized() - x2).norm() < 5)
+        /// Consider points with error smaller than the threshold
+        if ((x2_tf.hnormalized() - x2).norm() < thr)
           n_inliers++;
       }
     }

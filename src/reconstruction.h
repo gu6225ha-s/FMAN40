@@ -208,10 +208,12 @@ public:
   /// \brief Estimate 3d plane from point correspondences within a polygon.
   /// \param polygon2d polygon
   /// \param image image in which the polygon is defined
+  /// \param niter number of RANSAC iterations
+  /// \param thr inlier threshold (number of pixels)
   /// \return A vector \f$n\f$ such that \f$n^T X + 1 = 0\f$ for the 3d points
   /// \f$X\f$ in the plane.
-  Eigen::Vector3d EstimatePlane(const Polygon2d &polygon2d,
-                                const Image &image) const;
+  Eigen::Vector3d EstimatePlane(const Polygon2d &polygon2d, const Image &image,
+                                size_t niter, double thr) const;
 
   /// \brief Project a 2d polygon onto a 3d plane.
   /// \param polygon2d 2d polygon
