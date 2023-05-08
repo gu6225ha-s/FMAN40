@@ -237,7 +237,7 @@ public:
   /// \param item item contains the information of current 3d point
   /// \return the modified rotation matrix R, transfer vector t, and 2d point
   std::tuple<Eigen::Matrix3d, Eigen::Vector3d, Eigen::Vector2d>
-  ProcessInfor(const Image &image, const auto &item,
+  ProcessInfor(const Image &image, const std::pair<uint32_t, uint32_t> &item,
                Eigen::Matrix4d H_camera) const;
 
 private:

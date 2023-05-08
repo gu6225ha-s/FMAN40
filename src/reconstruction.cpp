@@ -106,7 +106,8 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
 }
 
 std::tuple<Eigen::Matrix3d, Eigen::Vector3d, Eigen::Vector2d>
-Reconstruction::ProcessInfor(const Image &image, const auto &item,
+Reconstruction::ProcessInfor(const Image &image,
+                             const std::pair<uint32_t, uint32_t> &item,
                              Eigen::Matrix4d H_camera) const {
   const Reconstruction::Image &image2 = GetImage(item.first);
   assert(image2.CamId() == image.CamId());
