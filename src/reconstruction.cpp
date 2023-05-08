@@ -29,7 +29,6 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   int max_n_inliners = 0;
   Eigen::Vector3d best_norm;
   Eigen::Matrix4d H_camera;
-  int n_inliers = 0;
   H_camera.block(0, 0, 3, 3) = R1.transpose();
   H_camera.block(3, 0, 1, 3).setConstant(0);
   H_camera.block(0, 3, 3, 1) = -R1.transpose() * t1;
@@ -49,6 +48,7 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   /// Run RANSAC for 1000 iterations
   for (size_t i = 0; i < 1000; i++) {
     std::vector<int> sampled_index;
+    int n_inliers = 0;
     PlaneEstimator plane_estimator;
     /// Randomly select minmum set of points to do the plane estimation
     std::sample(point_index.begin(), point_index.end(),
