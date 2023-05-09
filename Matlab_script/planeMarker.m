@@ -4,10 +4,13 @@ result = cell(size(images,1),1);
 polygon = cell(size(images,1),[]);
 for i = 1:1:size(images,1)
     polygon_infor = struct;
+    [~,name,ext] = fileparts(files{i});
+    polygon_infor.image_name = [name ext];
     % Manually plane mark
     count_p = 1;
-    f = images{i};
-    fig = imagesc(f);
+    figname = sprintf("%s (%d/%d)",polygon_infor.image_name,i,length(images));
+    fig = figure('Name',figname);
+    imagesc(images{i});
     hold on
     while isvalid(fig)
         title('Close the figure window manually to proceed to the next image')
@@ -21,9 +24,6 @@ for i = 1:1:size(images,1)
             count_p = count_p + 1;
         end
     end
-
-    [~,name,ext] = fileparts(files{i});
-    polygon_infor.image_name = [name ext];
 
     pOfCI = polygon(i, :);
     nOfp = sum(~cellfun('isempty', pOfCI));
