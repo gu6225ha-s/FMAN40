@@ -1,5 +1,11 @@
 function exportPolygon(total_path,polygon)
 % By JLL
+
+dir = fileparts(total_path);
+if ~exist(dir,'dir')
+    mkdir(dir)
+end
+
 comment1 = '# Image list with multiple lines of data per image:';
 comment2 = '# IMAGE_ID, IMAGE_NAME, CAMERA_ID, The number of polygons contained';
 comment3 = '# Coordinates of the 1:th polygon as (X1, Y1, X2, Y2, ...)';
