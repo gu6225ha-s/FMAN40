@@ -1,10 +1,9 @@
-function result = planeMarker(images,images_txt)
+function result = planeMarker(images,files)
 % By JLL
 result = cell(size(images,1),1);
 polygon = cell(size(images,1),[]);
 for i = 1:1:size(images,1)
     polygon_infor = struct;
-    image_infor = images_txt(i);
     % Manually plane mark
     count_p = 1;
     f = images{i};
@@ -23,9 +22,8 @@ for i = 1:1:size(images,1)
         end
     end
 
-    polygon_infor.image_id = image_infor.image_id;
-    polygon_infor.image_name = image_infor.name;
-    polygon_infor.camera_id = image_infor.camera_id;
+    [~,name,ext] = fileparts(files{i});
+    polygon_infor.image_name = [name ext];
 
     pOfCI = polygon(i, :);
     nOfp = sum(~cellfun('isempty', pOfCI));

@@ -7,7 +7,7 @@ if ~exist(dir,'dir')
 end
 
 comment1 = '# Image list with multiple lines of data per image:';
-comment2 = '# IMAGE_ID, IMAGE_NAME, CAMERA_ID, The number of polygons contained';
+comment2 = '# IMAGE_NAME, The number of polygons contained';
 comment3 = '# Coordinates of the 1:th polygon as (X1, Y1, X2, Y2, ...)';
 comment4 = '# Coordinates of the 2:th polygon as (X1, Y1, X2, Y2, ...)';
 comment5 = '# ........................................................';
@@ -27,7 +27,7 @@ for i = 1:1:size(polygon,1)
     n = image.nOfPolygon;
     if n ~= 0
         fid = fopen(total_path,'a');
-        fprintf(fid,'%.0f %s %.0f %.0f\n',image.image_id,image.image_name,image.camera_id,image.nOfPolygon);
+        fprintf(fid,'%s %.0f\n',image.image_name,image.nOfPolygon);
         fclose(fid);
         for j = 1:1:n
             cpc = image.PolygonCoordinate{j};
