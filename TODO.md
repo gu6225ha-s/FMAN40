@@ -1,4 +1,4 @@
-- [ ] Use RANSAC to estimate plane
+- [x] Use RANSAC to estimate plane
 - [ ] Use alternative equation [x₂]ₓHx₁ = 0 to estimate plane
 - [ ] Optimize plane parameters with Ceres Solver
 - [x] Warp original image to 3D plane
