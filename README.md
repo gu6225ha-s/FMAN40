@@ -2,7 +2,9 @@
 
 ## Overview
 
-TODO
+This repository contains the code for a project in [FMAN40, Project in Applied Mathematics](https://kurser.lth.se/lot/course/FMAN40) at Lund University. The goal of the project is to create a piecewise planar 3D reconstruction from a set of images.
+
+<!-- TODO: Add some more information here -->
 
 ## Dependencies
 
