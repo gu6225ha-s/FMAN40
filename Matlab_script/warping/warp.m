@@ -24,6 +24,9 @@ figure(1);
 imagesc(im);
 hold on;
 drawpoly(poly_im);
+axis off;
+set(gca,'LooseInset',get(gca,'TightInset'));
+print('im-orig.eps','-depsc');
 
 %% Define a coordinate system in the plane
 c = projplane(mean(poly_im,2),K,R,t,n); % center point
@@ -58,6 +61,9 @@ figure(2);
 imagesc(im_warp);
 hold on;
 drawpoly(poly_plane-lower);
+axis off;
+set(gca,'LooseInset',get(gca,'TightInset'));
+print('im-warped.eps','-depsc');
 
 %% Warp manually with for loops
 im_warp2 = zeros(size(im_warp),'uint8');
