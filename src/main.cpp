@@ -74,8 +74,8 @@ static ppr::Mesh CreateMesh(const ppr::Reconstruction &reconstruction,
 }
 
 int main(int argc, char *argv[]) {
-  size_t ransac_niter = 100;
-  double ransac_thr = 5.0;
+  size_t mlesac_niter = 100;
+  double mlesac_thr = 5.0;
 
   if (HasLongShortOption(argv, argv + argc, "--help", "-h")) {
     std::cout << "Piecewise Planar Reconstructions from Multiple Homographies"
@@ -90,8 +90,8 @@ int main(int argc, char *argv[]) {
               << " -poly, --polygons Path to polygon file" << std::endl
               << " -im, --images     Path to image directory" << std::endl
               << " -out, --output    Path to output glTF file" << std::endl
-              << " -it, --iterations Number of RANSAC iterations" << std::endl
-              << " -thr, --threshold RANSAC inlier threshold" << std::endl;
+              << " -it, --iterations Number of MLESAC iterations" << std::endl
+              << " -thr, --threshold MLESAC inlier threshold" << std::endl;
     return 0;
   }
 
@@ -133,17 +133,17 @@ int main(int argc, char *argv[]) {
   char *iterations =
       GetLongShortOption(argv, argv + argc, "--iterations", "-it");
   if (iterations) {
-    ransac_niter = static_cast<size_t>(std::stoull(iterations));
+    mlesac_niter = static_cast<size_t>(std::stoull(iterations));
   }
 
   char *threshold =
       GetLongShortOption(argv, argv + argc, "--threshold", "-thr");
   if (threshold) {
-    ransac_thr = std::stod(threshold);
+    mlesac_thr = std::stod(threshold);
   }
 
   std::cout << "Creating piecewise planar reconstruction (iterations: "
-            << ransac_niter << ", threshold: " << ransac_thr << ")"
+            << mlesac_niter << ", threshold: " << mlesac_thr << ")"
             << std::endl;
   ppr::ImageCache imcache(images);
   std::vector<ppr::Mesh> meshes;
@@ -159,7 +159,7 @@ int main(int argc, char *argv[]) {
       poly2d.Reverse();
     }
     ppr::Mesh mesh = CreateMesh(reconstruction, *image, poly2d,
-                                imcache[image_name], ransac_niter, ransac_thr);
+                                imcache[image_name], mlesac_niter, mlesac_thr);
     meshes.push_back(std::move(mesh));
   }
 

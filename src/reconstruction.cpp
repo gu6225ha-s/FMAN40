@@ -15,7 +15,7 @@ Reconstruction::FindImage(const std::string &name) const {
   return nullptr;
 }
 
-/// Estimate plane by using robust estimation method RANSAC
+/// Estimate plane by using robust estimation method MLESAC
 Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
                                               const Image &image, size_t niter,
                                               double thr) const {
@@ -27,7 +27,7 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
   const Eigen::Matrix3d &K = GetCamera(image.CamId()).K();
   const Eigen::Matrix3d Kinv = K.inverse();
   std::vector<int> point_index;
-  int max_n_inliners = 0;
+  double min_cost = std::numeric_limits<double>::max();
   Eigen::Vector3d best_norm;
   Eigen::Matrix4d H_camera;
   H_camera.block(0, 0, 3, 3) = R1.transpose();
@@ -46,10 +46,10 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
       point_index.push_back(i);
     }
   }
-  /// Run RANSAC iterations
+  /// Run MLESAC iterations
   for (size_t i = 0; i < niter; i++) {
     std::vector<int> sampled_index;
-    int n_inliers = 0;
+    double cost = 0;
     PlaneEstimator plane_estimator;
     /// Randomly select minmum set of points to do the plane estimation
     std::sample(point_index.begin(), point_index.end(),
@@ -85,14 +85,13 @@ Eigen::Vector3d Reconstruction::EstimatePlane(const Polygon2d &polygon2d,
         std::tie(R2, t2, x2) = ProcessInfor(image, item, H_camera);
         Eigen::Matrix3d H_points = K * (R2 - t2 * n.transpose()) * Kinv;
         Eigen::Vector3d x2_tf = H_points * x1.homogeneous();
-        /// Consider points with error smaller than the threshold
-        if ((x2_tf.hnormalized() - x2).norm() < thr)
-          n_inliers++;
+        /// Add penalty for this point correspondence
+        cost += std::min((x2_tf.hnormalized() - x2).squaredNorm(), thr * thr);
       }
     }
     /// Keep tracking the best norm
-    if (n_inliers > max_n_inliners) {
-      max_n_inliners = n_inliers;
+    if (cost < min_cost) {
+      min_cost = cost;
       best_norm = n;
     }
   }
