@@ -120,7 +120,7 @@ static Eigen::Vector3d ProjectPoint(const Eigen::Vector2d &point,
                                     const Eigen::Matrix3d &R,
                                     const Eigen::Vector3d &t,
                                     const Eigen::Matrix3d &Kinv,
-                                    const Eigen::Vector3d &plane) {
+                                    const Eigen::Vector3d &n) {
   // Camera equations:
   // λx = K(RX + t)  [1]
   //
@@ -133,8 +133,8 @@ static Eigen::Vector3d ProjectPoint(const Eigen::Vector2d &point,
   // Find λ by inserting [3] into [2]
   // λ = (nᵗRᵗt - 1)/(nᵗRᵗK⁻¹x)  [4]
   Eigen::Vector3d x = point.homogeneous();
-  double lambda = (plane.transpose() * R.transpose() * t - 1) /
-                  (plane.transpose() * R.transpose() * Kinv * x);
+  double lambda = (n.transpose() * R.transpose() * t - 1) /
+                  (n.transpose() * R.transpose() * Kinv * x);
   return R.transpose() * (lambda * Kinv * x - t);
 }
 
